@@ -13,18 +13,22 @@ fn main() {
     #[derive(Copy, Clone)]
     struct Vertex {
         position: [f32; 2],
+        color: [f32; 3],
     }
 
-    implement_vertex!(Vertex, position);
+    implement_vertex!(Vertex, position, color);
 
     let vertex1 = Vertex {
         position: [-0.5, -0.5],
+        color: [1.0, 1.0, 1.0],
     };
     let vertex2 = Vertex {
         position: [0.0, 0.5],
+        color: [1.0, 0.0, 0.0],
     };
     let vertex3 = Vertex {
         position: [0.5, -0.25],
+        color: [0.0, 1.0, 0.0],
     };
     let shape = vec![vertex1, vertex2, vertex3];
 
@@ -35,8 +39,11 @@ fn main() {
         #version 140
 
         in vec2 position;
+        in vec3 color;
+        out vec3 v_color;
 
         void main() {
+            v_color = color;
             gl_Position = vec4(position, 0.0, 1.0);
         }
     "#;
@@ -44,10 +51,11 @@ fn main() {
     let fragment_shader_src = r#"
         #version 140
 
+        in vec3 v_color;
         out vec4 color;
 
         void main() {
-            color = vec4(1.0, 0.0, 0.0, 1.0);
+            color = vec4(v_color, 1.0);
         }
     "#;
 
