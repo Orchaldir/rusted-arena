@@ -14,7 +14,6 @@ fn main() {
 
     let mut builder = ColoredTriangleBuilder::default();
 
-    builder.clear();
     builder.add_triangle([-0.5, -0.5], [0.0, 0.5], [0.5, -0.25], [0.0, 1.0, 0.0]);
     builder.add_tile([-1.0, -1.0], [0.5, 0.5], [1.0, 0.0, 0.0]);
 
