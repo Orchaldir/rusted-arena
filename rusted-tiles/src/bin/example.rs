@@ -30,6 +30,16 @@ impl ColoredTriangleBuilder {
         self.add(c, color);
     }
 
+    pub fn add_tile(&mut self, position: [f32; 2], size: [f32; 2], color: [f32; 3]) {
+        let corner00 = position;
+        let corner10 = [position[0] + size[0], position[1]];
+        let corner01 = [position[0], position[1] + size[1]];
+        let corner11 = [position[0] + size[0], position[1] + size[1]];
+
+        self.add_triangle(corner00, corner10, corner11, color);
+        self.add_triangle(corner00, corner11, corner01, color);
+    }
+
     fn add(&mut self, position: [f32; 2], color: [f32; 3]) {
         self.vertices.push(ColoredVertex { position, color });
     }
@@ -52,6 +62,7 @@ fn main() {
 
     builder.clear();
     builder.add_triangle([-0.5, -0.5], [0.0, 0.5], [0.5, -0.25], [0.0, 1.0, 0.0]);
+    builder.add_tile([-1.0, -1.0], [0.5, 0.5], [1.0, 0.0, 0.0]);
 
     let vertex_buffer = glium::VertexBuffer::new(&display, builder.get()).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
