@@ -1,5 +1,5 @@
 [package]
-name = "rusted-tiles"
+name = "rusted_tiles"
 version = "0.1.0"
 authors = ["Orchaldir <orchaldir@gmail.com>"]
 edition = "2018"
