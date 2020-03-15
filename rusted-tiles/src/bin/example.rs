@@ -1,6 +1,44 @@
 #[macro_use]
 extern crate glium;
 
+#[derive(Copy, Clone)]
+struct ColoredVertex {
+    position: [f32; 2],
+    color: [f32; 3],
+}
+
+implement_vertex!(ColoredVertex, position, color);
+
+struct ColoredTriangleBuilder {
+    vertices: Vec<ColoredVertex>,
+}
+
+impl ColoredTriangleBuilder {
+    pub fn new() -> ColoredTriangleBuilder {
+        ColoredTriangleBuilder {
+            vertices: Vec::new(),
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.vertices.clear();
+    }
+
+    pub fn add_triangle(&mut self, a: [f32; 2], b: [f32; 2], c: [f32; 2], color: [f32; 3]) {
+        self.add(a, color);
+        self.add(b, color);
+        self.add(c, color);
+    }
+
+    fn add(&mut self, position: [f32; 2], color: [f32; 3]) {
+        self.vertices.push(ColoredVertex { position, color });
+    }
+
+    pub fn get(&self) -> &Vec<ColoredVertex> {
+        &self.vertices
+    }
+}
+
 fn main() {
     #[allow(unused_imports)]
     use glium::{glutin, Surface};
@@ -10,29 +48,12 @@ fn main() {
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
 
-    #[derive(Copy, Clone)]
-    struct Vertex {
-        position: [f32; 2],
-        color: [f32; 3],
-    }
+    let mut builder = ColoredTriangleBuilder::new();
 
-    implement_vertex!(Vertex, position, color);
+    builder.clear();
+    builder.add_triangle([-0.5, -0.5], [0.0, 0.5], [0.5, -0.25], [0.0, 1.0, 0.0]);
 
-    let vertex1 = Vertex {
-        position: [-0.5, -0.5],
-        color: [1.0, 1.0, 1.0],
-    };
-    let vertex2 = Vertex {
-        position: [0.0, 0.5],
-        color: [1.0, 0.0, 0.0],
-    };
-    let vertex3 = Vertex {
-        position: [0.5, -0.25],
-        color: [0.0, 1.0, 0.0],
-    };
-    let shape = vec![vertex1, vertex2, vertex3];
-
-    let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
+    let vertex_buffer = glium::VertexBuffer::new(&display, builder.get()).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
     let vertex_shader_src = r#"
