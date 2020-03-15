@@ -1,7 +1,19 @@
 extern crate glium;
 extern crate rusted_tiles;
 
+use glium::backend::Facade;
 use rusted_tiles::rendering::colored::ColoredTriangleBuilder;
+use std::fs;
+
+fn load_program<F: Facade>(display: &F, vertex_file: &str, fragment_file: &str) -> glium::Program {
+    let path = "resources/shader/";
+    let vertex_shader =
+        fs::read_to_string([path, vertex_file].concat()).expect("Could not load vertex shader");
+    let fragment_shader =
+        fs::read_to_string([path, fragment_file].concat()).expect("Could not load vertex shader");
+
+    glium::Program::from_source(display, &vertex_shader, &fragment_shader, None).unwrap()
+}
 
 fn main() {
     #[allow(unused_imports)]
@@ -20,33 +32,7 @@ fn main() {
     let vertex_buffer = glium::VertexBuffer::new(&display, builder.get()).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
-    let vertex_shader_src = r#"
-        #version 140
-
-        in vec2 position;
-        in vec3 color;
-        out vec3 v_color;
-
-        void main() {
-            v_color = color;
-            gl_Position = vec4(position, 0.0, 1.0);
-        }
-    "#;
-
-    let fragment_shader_src = r#"
-        #version 140
-
-        in vec3 v_color;
-        out vec4 color;
-
-        void main() {
-            color = vec4(v_color, 1.0);
-        }
-    "#;
-
-    let program =
-        glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src, None)
-            .unwrap();
+    let program = load_program(&display, "colored.vertex", "colored.fragment");
 
     event_loop.run(move |event, _, control_flow| {
         let next_frame_time =
