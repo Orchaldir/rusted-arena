@@ -1,3 +1,5 @@
+use crate::math::get_corners;
+
 #[derive(Copy, Clone)]
 pub struct ColoredVertex {
     pub position: [f32; 2],
@@ -17,10 +19,7 @@ impl ColoredTriangleBuilder {
     }
 
     pub fn add_tile(&mut self, position: [f32; 2], size: [f32; 2], color: [f32; 3]) {
-        let corner00 = position;
-        let corner10 = [position[0] + size[0], position[1]];
-        let corner01 = [position[0], position[1] + size[1]];
-        let corner11 = [position[0] + size[0], position[1] + size[1]];
+        let [corner00, corner10, corner01, corner11] = get_corners(position, size);
 
         self.add_triangle(corner00, corner10, corner11, color);
         self.add_triangle(corner00, corner11, corner01, color);

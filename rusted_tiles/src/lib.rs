@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate glium;
 
+pub mod math;
 pub mod rendering;
 
 use crate::rendering::colored::ColoredVertex;
