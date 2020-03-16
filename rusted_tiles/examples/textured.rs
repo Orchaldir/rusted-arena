@@ -1,8 +1,11 @@
+#[macro_use]
 extern crate glium;
+extern crate image;
 extern crate rusted_tiles;
 
-use rusted_tiles::rendering::colored::ColoredTriangleBuilder;
+use rusted_tiles::rendering::textured::TexturedTriangleBuilder;
 use rusted_tiles::rendering::shader::load_program;
+use std::io::Cursor;
 
 fn main() {
     #[allow(unused_imports)]
@@ -13,15 +16,20 @@ fn main() {
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
 
-    let mut builder = ColoredTriangleBuilder::default();
+    let image = image::load(Cursor::new(&include_bytes!("..\\..\\resources\\image\\ascii.png")[..]),
+                            image::ImageFormat::Png).unwrap().to_rgba();
+    let image_dimensions = image.dimensions();
+    let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
+    let texture = glium::texture::Texture2d::new(&display, image).unwrap();
 
-    builder.add_triangle([-0.5, -0.5], [0.0, 0.5], [0.5, -0.25], [0.0, 1.0, 0.0]);
-    builder.add_tile([-1.0, -1.0], [0.5, 0.5], [1.0, 0.0, 0.0]);
+    let mut builder = TexturedTriangleBuilder::default();
+
+    builder.add_tile([-0.5, -0.5], [1.0, 1.0], [0.0, 0.0], [1.0, 1.0], [1.0, 1.0, 1.0]);
 
     let vertex_buffer = glium::VertexBuffer::new(&display, builder.get()).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
-    let program = load_program(&display, "colored.vertex", "colored.fragment");
+    let program = load_program(&display, "textured.vertex", "textured.fragment");
 
     event_loop.run(move |event, _, control_flow| {
         let next_frame_time =
@@ -42,12 +50,17 @@ fn main() {
 
         let mut target = display.draw();
         target.clear_color(0.0, 0.0, 1.0, 1.0);
+
+        let uniforms = uniform! {
+            tex: &texture,
+        };
+
         target
             .draw(
                 &vertex_buffer,
                 &indices,
                 &program,
-                &glium::uniforms::EmptyUniforms,
+                &uniforms,
                 &Default::default(),
             )
             .unwrap();
