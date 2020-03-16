@@ -9,7 +9,7 @@ fn main() {
     use glium::{glutin, Surface};
 
     let event_loop = glutin::event_loop::EventLoop::new();
-    let wb = glutin::window::WindowBuilder::new().with_title("Example with colored Triangles");
+    let wb = glutin::window::WindowBuilder::new().with_title("Example with textured Triangles");
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
 
