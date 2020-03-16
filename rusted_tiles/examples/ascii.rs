@@ -28,7 +28,15 @@ fn main() {
 
     let mut builder = AsciiBuilder::default();
 
-    builder.add_u8([-0.5, -0.5], [1.0, 1.0], 'a' as u8, [1.0, 0.0, 0.0]);
+    builder.add_u8([-0.5, -0.5], [0.5, 0.5], 'a' as u8, [1.0, 0.0, 0.0]);
+    builder.add_char([0.0, -0.5], [0.5, 0.5], 'b', [0.0, 1.0, 0.0]);
+    builder.add_string([0.0, 0.2], [0.1, 0.1], "Test?", [1.0, 1.0, 1.0]);
+    builder.add_string(
+        [-1.0, 0.4],
+        [0.05, 0.1],
+        "Non-Ascii Symbols are replaced with '🎉'!",
+        [1.0, 1.0, 0.0],
+    );
 
     let vertex_buffer = glium::VertexBuffer::new(&display, builder.get()).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
