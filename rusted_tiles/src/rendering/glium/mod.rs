@@ -3,6 +3,7 @@ pub mod texture;
 
 use super::Renderer;
 use crate::rendering::colored::ColoredVertex;
+use crate::rendering::textured::TexturedVertex;
 use glium::{Program, Surface};
 
 const INDICES: glium::index::NoIndices =
@@ -10,17 +11,26 @@ const INDICES: glium::index::NoIndices =
 
 pub struct GliumRenderer {
     display: glium::Display,
-    program: Program,
     target: Option<glium::Frame>,
+    colored_program: Program,
+    textured_program: Program,
+    texture: glium::texture::Texture2d,
 }
 
 impl GliumRenderer {
     pub fn new(display: glium::Display) -> GliumRenderer {
-        let program = shader::load_program(&display, "colored.vertex", "colored.fragment");
+        let colored_program = shader::load_program(&display, "colored.vertex", "colored.fragment");
+        let textured_program =
+            shader::load_program(&display, "textured.vertex", "textured.fragment");
+
+        let texture = texture::load_texture(&display, "ascii.png").unwrap();
+
         GliumRenderer {
             display,
-            program,
             target: None,
+            colored_program,
+            textured_program,
+            texture,
         }
     }
 }
@@ -32,7 +42,7 @@ impl Renderer for GliumRenderer {
         self.target = Some(target);
     }
 
-    fn render_colored(&mut self, vertices: &Vec<ColoredVertex>) {
+    fn render_colored(&mut self, vertices: &[ColoredVertex]) {
         let target = self.target.as_mut().unwrap();
         let vertex_buffer = glium::VertexBuffer::new(&self.display, vertices).unwrap();
 
@@ -40,8 +50,27 @@ impl Renderer for GliumRenderer {
             .draw(
                 &vertex_buffer,
                 &INDICES,
-                &self.program,
+                &self.colored_program,
                 &glium::uniforms::EmptyUniforms,
+                &Default::default(),
+            )
+            .unwrap();
+    }
+
+    fn render_textured(&mut self, vertices: &[TexturedVertex]) {
+        let target = self.target.as_mut().unwrap();
+        let vertex_buffer = glium::VertexBuffer::new(&self.display, vertices).unwrap();
+
+        let uniforms = uniform! {
+            tex: &self.texture,
+        };
+
+        target
+            .draw(
+                &vertex_buffer,
+                &INDICES,
+                &self.textured_program,
+                &uniforms,
                 &Default::default(),
             )
             .unwrap();

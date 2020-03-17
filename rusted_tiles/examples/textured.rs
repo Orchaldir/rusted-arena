@@ -1,10 +1,9 @@
-#[macro_use]
 extern crate glium;
 extern crate rusted_tiles;
 
-use rusted_tiles::rendering::glium::shader::load_program;
-use rusted_tiles::rendering::glium::texture::load_texture;
+use rusted_tiles::rendering::glium::GliumRenderer;
 use rusted_tiles::rendering::textured::TexturedTriangleBuilder;
+use rusted_tiles::rendering::Renderer;
 
 fn main() {
     #[allow(unused_imports)]
@@ -14,8 +13,6 @@ fn main() {
     let wb = glutin::window::WindowBuilder::new().with_title("Example with textured Triangles");
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
-
-    let texture = load_texture(&display, "ascii.png").unwrap();
 
     let mut builder = TexturedTriangleBuilder::default();
 
@@ -27,10 +24,7 @@ fn main() {
         [1.0, 0.0, 0.0],
     );
 
-    let vertex_buffer = glium::VertexBuffer::new(&display, builder.get()).unwrap();
-    let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
-
-    let program = load_program(&display, "textured.vertex", "textured.fragment");
+    let mut render = GliumRenderer::new(display);
 
     event_loop.run(move |event, _, control_flow| {
         let next_frame_time =
@@ -49,22 +43,8 @@ fn main() {
             _ => return,
         }
 
-        let mut target = display.draw();
-        target.clear_color(0.0, 0.0, 1.0, 1.0);
-
-        let uniforms = uniform! {
-            tex: &texture,
-        };
-
-        target
-            .draw(
-                &vertex_buffer,
-                &indices,
-                &program,
-                &uniforms,
-                &Default::default(),
-            )
-            .unwrap();
-        target.finish().unwrap();
+        render.start([0.0, 0.0, 1.0]);
+        render.render_textured(builder.get());
+        render.finish();
     });
 }
