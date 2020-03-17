@@ -1,11 +1,10 @@
 #[macro_use]
 extern crate glium;
-extern crate image;
 extern crate rusted_tiles;
 
-use image::io::Reader;
 use rusted_tiles::rendering::ascii::AsciiBuilder;
 use rusted_tiles::rendering::shader::load_program;
+use rusted_tiles::rendering::texture::load_texture;
 
 fn main() {
     #[allow(unused_imports)]
@@ -16,15 +15,7 @@ fn main() {
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
 
-    let image = Reader::open("resources/image/ascii.png")
-        .unwrap()
-        .decode()
-        .unwrap()
-        .to_rgba();
-    let image_dimensions = image.dimensions();
-    let image =
-        glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
-    let texture = glium::texture::Texture2d::new(&display, image).unwrap();
+    let texture = load_texture(&display, "ascii.png").unwrap();
 
     let mut builder = AsciiBuilder::default();
 

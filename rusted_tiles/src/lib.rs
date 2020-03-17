@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate glium;
+extern crate image;
 
 pub mod math;
 pub mod rendering;
