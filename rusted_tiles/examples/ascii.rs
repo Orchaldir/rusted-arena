@@ -3,8 +3,8 @@ extern crate glium;
 extern crate rusted_tiles;
 
 use rusted_tiles::rendering::ascii::AsciiBuilder;
-use rusted_tiles::rendering::shader::load_program;
-use rusted_tiles::rendering::texture::load_texture;
+use rusted_tiles::rendering::glium::shader::load_program;
+use rusted_tiles::rendering::glium::texture::load_texture;
 
 fn main() {
     #[allow(unused_imports)]

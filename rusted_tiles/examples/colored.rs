@@ -2,7 +2,7 @@ extern crate glium;
 extern crate rusted_tiles;
 
 use rusted_tiles::rendering::colored::ColoredTriangleBuilder;
-use rusted_tiles::rendering::shader::load_program;
+use rusted_tiles::rendering::glium::shader::load_program;
 
 fn main() {
     #[allow(unused_imports)]

@@ -2,8 +2,8 @@
 extern crate glium;
 extern crate rusted_tiles;
 
-use rusted_tiles::rendering::shader::load_program;
-use rusted_tiles::rendering::texture::load_texture;
+use rusted_tiles::rendering::glium::shader::load_program;
+use rusted_tiles::rendering::glium::texture::load_texture;
 use rusted_tiles::rendering::textured::TexturedTriangleBuilder;
 
 fn main() {
