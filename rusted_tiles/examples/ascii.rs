@@ -28,7 +28,7 @@ fn main() {
 
     let mut builder = AsciiBuilder::default();
 
-    builder.add_u8([-0.5, -0.5], [0.5, 0.5], 'a' as u8, [1.0, 0.0, 0.0]);
+    builder.add_u8([-0.5, -0.5], [0.5, 0.5], b'a', [1.0, 0.0, 0.0]);
     builder.add_char([0.0, -0.5], [0.5, 0.5], 'b', [0.0, 1.0, 0.0]);
     builder.add_string([0.0, 0.2], [0.1, 0.1], "Test?", [1.0, 1.0, 1.0]);
     builder.add_string(
