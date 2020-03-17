@@ -2,7 +2,8 @@ extern crate glium;
 extern crate rusted_tiles;
 
 use rusted_tiles::rendering::colored::ColoredTriangleBuilder;
-use rusted_tiles::rendering::glium::shader::load_program;
+use rusted_tiles::rendering::glium::GliumRenderer;
+use rusted_tiles::rendering::Renderer;
 
 fn main() {
     #[allow(unused_imports)]
@@ -18,10 +19,7 @@ fn main() {
     builder.add_triangle([-0.5, -0.5], [0.0, 0.5], [0.5, -0.25], [0.0, 1.0, 0.0]);
     builder.add_tile([-1.0, -1.0], [0.5, 0.5], [1.0, 0.0, 0.0]);
 
-    let vertex_buffer = glium::VertexBuffer::new(&display, builder.get()).unwrap();
-    let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
-
-    let program = load_program(&display, "colored.vertex", "colored.fragment");
+    let mut render = GliumRenderer::new(display);
 
     event_loop.run(move |event, _, control_flow| {
         let next_frame_time =
@@ -40,17 +38,8 @@ fn main() {
             _ => return,
         }
 
-        let mut target = display.draw();
-        target.clear_color(0.0, 0.0, 1.0, 1.0);
-        target
-            .draw(
-                &vertex_buffer,
-                &indices,
-                &program,
-                &glium::uniforms::EmptyUniforms,
-                &Default::default(),
-            )
-            .unwrap();
-        target.finish().unwrap();
+        render.start([0.0, 0.0, 1.0]);
+        render.render_colored(builder.get());
+        render.finish();
     });
 }
