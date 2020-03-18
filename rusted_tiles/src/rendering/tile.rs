@@ -33,6 +33,13 @@ impl TileRenderer {
             .add_u8(position, self.tile_size, ascii, color);
     }
 
+    pub fn add_big_ascii(&mut self, index: [u32; 2], size: u32, ascii: u8, color: [f32; 3]) {
+        let position = self.calculate_position(index);
+        let tile_size = self.calculate_tile_size(size);
+
+        self.ascii_builder.add_u8(position, tile_size, ascii, color);
+    }
+
     pub fn add_text(&mut self, index: [u32; 2], string: &str, color: [f32; 3]) {
         let position = self.calculate_position(index);
 
@@ -40,10 +47,23 @@ impl TileRenderer {
             .add_string(position, self.tile_size, string, color);
     }
 
-    fn calculate_position(&mut self, position: [u32; 2]) -> [f32; 2] {
+    pub fn add_big_text(&mut self, index: [u32; 2], size: u32, string: &str, color: [f32; 3]) {
+        let position = self.calculate_position(index);
+        let tile_size = self.calculate_tile_size(size);
+
+        self.ascii_builder
+            .add_string(position, tile_size, string, color);
+    }
+
+    fn calculate_position(&self, position: [u32; 2]) -> [f32; 2] {
         let x = self.start[0] + position[0] as f32 * self.tile_size[0];
         let y = self.start[1] + position[1] as f32 * self.tile_size[1];
         [x, y]
+    }
+
+    fn calculate_tile_size(&self, size: u32) -> [f32; 2] {
+        let size = size as f32;
+        [self.tile_size[0] * size, self.tile_size[1] * size]
     }
 
     pub fn render<R: Renderer>(&self, renderer: &mut R) {
