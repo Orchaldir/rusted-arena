@@ -71,3 +71,46 @@ impl TileRenderer {
         renderer.render_textured(self.ascii_builder.get());
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::rendering::colored::ColoredVertex;
+    use crate::rendering::testing::*;
+    use crate::rendering::textured::TexturedVertex;
+
+    impl TileRenderer {
+        pub fn get_colored(&self) -> &Vec<ColoredVertex> {
+            &self.colored_builder.get()
+        }
+
+        pub fn get_textured(&self) -> &Vec<TexturedVertex> {
+            &self.ascii_builder.get()
+        }
+    }
+
+    const P00: [f32; 2] = [130.0, 280.0];
+    const P10: [f32; 2] = [140.0, 280.0];
+    const P01: [f32; 2] = [130.0, 300.0];
+    const P11: [f32; 2] = [140.0, 300.0];
+    const POS: [[f32; 2]; 4] = [P00, P10, P01, P11];
+    const COLOR: [f32; 3] = [0.1, 0.2, 0.3];
+
+    #[test]
+    fn test_add_tile() {
+        let mut renderer = TileRenderer::new([100.0, 200.0], [10.0, 20.0]);
+
+        renderer.add_tile([3, 4], COLOR);
+
+        assert_tile(renderer.get_colored(), POS, COLOR);
+    }
+
+    #[test]
+    fn test_add_ascii() {
+        let mut renderer = TileRenderer::new([100.0, 200.0], [10.0, 20.0]);
+
+        renderer.add_ascii([3, 4], b'A', COLOR);
+
+        assert_u8(renderer.get_textured(), POS, TC_A, COLOR);
+    }
+}

@@ -37,13 +37,7 @@ impl ColoredTriangleBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    const SIZE: [f32; 2] = [0.5, 1.5];
-    const P00: [f32; 2] = [2.0, 4.0];
-    const P10: [f32; 2] = [2.5, 4.0];
-    const P01: [f32; 2] = [2.0, 5.5];
-    const P11: [f32; 2] = [2.5, 5.5];
-    const COLOR: [f32; 3] = [0.1, 0.2, 0.3];
+    use crate::rendering::testing::*;
 
     #[test]
     fn test_add_triangle() {
@@ -69,18 +63,6 @@ mod tests {
 
         builder.add_tile(P00, SIZE, COLOR);
 
-        let vertices = builder.get();
-
-        assert_eq!(vertices.len(), 6);
-        assert_eq!(vertices[0].position, P00);
-        assert_eq!(vertices[1].position, P10);
-        assert_eq!(vertices[2].position, P11);
-        assert_eq!(vertices[3].position, P00);
-        assert_eq!(vertices[4].position, P11);
-        assert_eq!(vertices[5].position, P01);
-
-        for vertex in vertices {
-            assert_eq!(vertex.color, COLOR);
-        }
+        assert_tile(builder.get(), POS, COLOR);
     }
 }

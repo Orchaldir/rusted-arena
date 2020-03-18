@@ -50,26 +50,7 @@ impl AsciiBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    const SIZE: [f32; 2] = [0.5, 1.5];
-    const P00: [f32; 2] = [2.0, 4.0];
-    const P10: [f32; 2] = [2.5, 4.0];
-    const P01: [f32; 2] = [2.0, 5.5];
-    const P11: [f32; 2] = [2.5, 5.5];
-
-    // char A has column 1 & row 11
-    const A00: [f32; 2] = [0.0625, 0.6875];
-    const A10: [f32; 2] = [0.125, 0.6875];
-    const A01: [f32; 2] = [0.0625, 0.75];
-    const A11: [f32; 2] = [0.125, 0.75];
-
-    // char ? has column 15 & row 12
-    const Q00: [f32; 2] = [0.9375, 0.75];
-    const Q10: [f32; 2] = [1.0, 0.75];
-    const Q01: [f32; 2] = [0.9375, 0.8125];
-    const Q11: [f32; 2] = [1.0, 0.8125];
-
-    const COLOR: [f32; 3] = [0.4, 0.5, 0.6];
+    use crate::rendering::testing::*;
 
     #[test]
     fn test_add_u8() {
@@ -77,7 +58,7 @@ mod tests {
 
         builder.add_u8(P00, SIZE, b'A', COLOR);
 
-        assert_u8(&mut builder, [A00, A10, A01, A11], COLOR);
+        assert_u8(builder.get(), POS, TC_A, COLOR);
     }
 
     #[test]
@@ -86,7 +67,7 @@ mod tests {
 
         builder.add_char(P00, SIZE, 'A', COLOR);
 
-        assert_u8(&mut builder, [A00, A10, A01, A11], COLOR);
+        assert_u8(builder.get(), POS, TC_A, COLOR);
     }
 
     #[test]
@@ -95,23 +76,6 @@ mod tests {
 
         builder.add_char(P00, SIZE, '🎉', COLOR);
 
-        assert_u8(&mut builder, [Q00, Q10, Q01, Q11], INVALID_COLOR);
-    }
-
-    fn assert_u8(builder: &mut AsciiBuilder, tcs: [[f32; 2]; 4], color: [f32; 3]) {
-        let vertices = builder.get();
-        assert_eq!(vertices.len(), 6);
-        assert_tile(&vertices[0], P00, tcs[0], color);
-        assert_tile(&vertices[1], P10, tcs[1], color);
-        assert_tile(&vertices[2], P11, tcs[3], color);
-        assert_tile(&vertices[3], P00, tcs[0], color);
-        assert_tile(&vertices[4], P11, tcs[3], color);
-        assert_tile(&vertices[5], P01, tcs[2], color);
-    }
-
-    fn assert_tile(vertex: &TexturedVertex, pos: [f32; 2], tc: [f32; 2], color: [f32; 3]) {
-        assert_eq!(vertex.position, pos);
-        assert_eq!(vertex.tc, tc);
-        assert_eq!(vertex.color, color);
+        assert_u8(builder.get(), POS, TC_Q, INVALID_COLOR);
     }
 }
