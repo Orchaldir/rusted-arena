@@ -17,6 +17,7 @@ fn main() {
     let mut tile_renderer = TileRenderer::new([-1.0, -1.0], [0.05, 0.1]);
 
     tile_renderer.add_tile([0, 0], [1.0, 0.0, 0.0]);
+    tile_renderer.add_ascii([1, 0], b'A', [1.0, 1.0, 1.0]);
 
     let mut render = GliumRenderer::new(display);
 
@@ -37,7 +38,7 @@ fn main() {
             _ => return,
         }
 
-        render.start([0.0, 0.0, 1.0]);
+        render.start([0.0, 0.0, 0.0]);
         tile_renderer.render(&mut render);
         render.finish();
     });
