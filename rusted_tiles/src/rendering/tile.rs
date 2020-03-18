@@ -113,4 +113,19 @@ mod tests {
 
         assert_u8(renderer.get_textured(), POS, TC_A, COLOR);
     }
+
+    #[test]
+    fn test_add_big_ascii() {
+        let b00 = [150.0, 400.0];
+        let b10 = [170.0, 400.0];
+        let b01 = [150.0, 440.0];
+        let b11 = [170.0, 440.0];
+        let big = [b00, b10, b01, b11];
+
+        let mut renderer = TileRenderer::new([100.0, 200.0], [10.0, 20.0]);
+
+        renderer.add_big_ascii([5, 10], 2, b'?', COLOR);
+
+        assert_u8(renderer.get_textured(), big, TC_Q, COLOR);
+    }
 }
