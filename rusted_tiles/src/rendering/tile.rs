@@ -22,13 +22,22 @@ impl TileRenderer {
     pub fn add_tile(&mut self, index: [u32; 2], color: [f32; 3]) {
         let position = self.calculate_position(index);
 
-        self.colored_builder.add_tile(position, self.tile_size, color);
+        self.colored_builder
+            .add_tile(position, self.tile_size, color);
     }
 
     pub fn add_ascii(&mut self, index: [u32; 2], ascii: u8, color: [f32; 3]) {
         let position = self.calculate_position(index);
 
-        self.ascii_builder.add_u8(position, self.tile_size, ascii, color);
+        self.ascii_builder
+            .add_u8(position, self.tile_size, ascii, color);
+    }
+
+    pub fn add_text(&mut self, index: [u32; 2], string: &str, color: [f32; 3]) {
+        let position = self.calculate_position(index);
+
+        self.ascii_builder
+            .add_string(position, self.tile_size, string, color);
     }
 
     fn calculate_position(&mut self, position: [u32; 2]) -> [f32; 2] {

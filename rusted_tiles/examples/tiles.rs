@@ -18,6 +18,7 @@ fn main() {
 
     tile_renderer.add_tile([0, 0], [1.0, 0.0, 0.0]);
     tile_renderer.add_ascii([1, 0], b'A', [1.0, 1.0, 1.0]);
+    tile_renderer.add_text([10, 15], "Hello", [0.0, 1.0, 1.0]);
 
     let mut render = GliumRenderer::new(display);
 
