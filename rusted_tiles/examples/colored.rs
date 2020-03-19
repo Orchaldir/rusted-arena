@@ -18,6 +18,10 @@ fn main() {
 
     builder.add_triangle([-0.5, -0.5], [0.0, 0.5], [0.5, -0.25], [0.0, 1.0, 0.0]);
     builder.add_tile([-1.0, -1.0], [0.5, 0.5], [1.0, 0.0, 0.0]);
+    builder.add_polygon(
+        &[[0.5, -1.0], [1.0, -1.0], [0.8, 0.8], [0.5, 0.1]],
+        [1.0, 1.0, 0.0],
+    );
 
     let mut render = GliumRenderer::new(display);
 

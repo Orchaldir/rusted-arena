@@ -26,6 +26,21 @@ impl TileRenderer {
             .add_tile(position, self.tile_size, color);
     }
 
+    pub fn add_polygon(&mut self, index: [u32; 2], corners: &[[f32; 2]], color: [f32; 3]) {
+        let pos = self.calculate_position(index);
+        let polygon: Vec<[f32; 2]> = corners
+            .iter()
+            .map(|[x, y]| {
+                [
+                    pos[0] + x * self.tile_size[0],
+                    pos[1] + y * self.tile_size[1],
+                ]
+            })
+            .collect();
+
+        self.colored_builder.add_polygon(&polygon, color);
+    }
+
     pub fn add_ascii(&mut self, index: [u32; 2], ascii: u8, color: [f32; 3]) {
         let position = self.calculate_position(index);
 

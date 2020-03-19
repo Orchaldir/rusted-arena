@@ -17,6 +17,11 @@ fn main() {
     let mut tile_renderer = TileRenderer::new([-1.0, -1.0], [0.05, 0.1]);
 
     tile_renderer.add_tile([0, 0], [1.0, 0.0, 0.0]);
+    tile_renderer.add_polygon(
+        [30, 15],
+        &[[0.0, 0.2], [1.0, 0.2], [0.5, 1.0]],
+        [1.0, 0.0, 0.0],
+    );
     tile_renderer.add_ascii([1, 0], b'@', [1.0, 1.0, 1.0]);
     tile_renderer.add_big_ascii([5, 10], 3, b'D', [1.0, 1.0, 1.0]);
     tile_renderer.add_text([10, 15], "Hello", [0.0, 1.0, 1.0]);

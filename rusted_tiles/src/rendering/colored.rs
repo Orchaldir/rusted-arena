@@ -25,6 +25,18 @@ impl ColoredTriangleBuilder {
         self.add_triangle(corner00, corner11, corner01, color);
     }
 
+    pub fn add_polygon(&mut self, corners: &[[f32; 2]], color: [f32; 3]) {
+        if corners.len() < 3 {
+            panic!("Polygon must have 3 corners!");
+        }
+
+        let last_start_index = corners.len() - 1;
+
+        for i in 1..last_start_index {
+            self.add_triangle(corners[0], corners[i], corners[i + 1], color);
+        }
+    }
+
     fn add(&mut self, position: [f32; 2], color: [f32; 3]) {
         self.vertices.push(ColoredVertex { position, color });
     }
