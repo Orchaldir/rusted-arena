@@ -1,5 +1,6 @@
 pub mod shader;
 pub mod texture;
+pub mod window;
 
 use super::Renderer;
 use crate::rendering::colored::ColoredVertex;
