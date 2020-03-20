@@ -51,6 +51,15 @@ impl Window for GliumWindow {
                         *control_flow = glutin::event_loop::ControlFlow::Exit;
                         return;
                     }
+                    glutin::event::WindowEvent::KeyboardInput { input, .. } => {
+                        if input.state == glutin::event::ElementState::Released {
+                            if let Some(key) = input.virtual_keycode {
+                                let mut reference = app.borrow_mut();
+                                reference.on_key_released(key);
+                            }
+                            return;
+                        }
+                    }
                     _ => return,
                 },
                 glutin::event::Event::RedrawRequested(_) => (),

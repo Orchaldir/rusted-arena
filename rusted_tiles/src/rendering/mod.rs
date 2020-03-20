@@ -5,6 +5,7 @@ pub mod testing;
 pub mod textured;
 pub mod tile;
 
+pub use glium::glutin::event::VirtualKeyCode;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -17,6 +18,7 @@ pub trait Renderer {
 
 pub trait App {
     fn render(&mut self, renderer: &mut dyn Renderer);
+    fn on_key_released(&mut self, key: VirtualKeyCode);
 }
 
 pub trait Window {
