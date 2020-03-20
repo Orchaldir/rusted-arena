@@ -1,4 +1,5 @@
 use super::GliumRenderer;
+use crate::rendering::tile::TileRenderer;
 use crate::rendering::{App, Window};
 use glium::glutin;
 use std::cell::RefCell;
@@ -21,6 +22,11 @@ impl GliumWindow {
 }
 
 impl Window for GliumWindow {
+    fn get_tile_renderer(&self) -> TileRenderer {
+        let tile_size = [2.0 / self.tiles[0] as f32, 2.0 / self.tiles[1] as f32];
+        TileRenderer::new([0.0, 0.0], tile_size)
+    }
+
     fn run(&mut self, app: Rc<RefCell<dyn App>>) -> ! {
         let size = glutin::dpi::LogicalSize::new(
             self.tiles[0] * self.tile_size[0],
