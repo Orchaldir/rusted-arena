@@ -24,7 +24,7 @@ impl GliumWindow {
 impl Window for GliumWindow {
     fn get_tile_renderer(&self) -> TileRenderer {
         let tile_size = [2.0 / self.tiles[0] as f32, 2.0 / self.tiles[1] as f32];
-        TileRenderer::new([0.0, 0.0], tile_size)
+        TileRenderer::new([-1.0, -1.0], tile_size)
     }
 
     fn run(&mut self, app: Rc<RefCell<dyn App>>) -> ! {
