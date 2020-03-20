@@ -1,5 +1,6 @@
 [workspace]
 
 members = [
+    "rusted-arena",
     "rusted_tiles",
 ]
