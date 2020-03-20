@@ -2,7 +2,7 @@ extern crate rusted_tiles;
 
 use rusted_tiles::rendering::glium_impl::window::GliumWindow;
 use rusted_tiles::rendering::tile::TileRenderer;
-use rusted_tiles::rendering::{App, Renderer, VirtualKeyCode, Window};
+use rusted_tiles::rendering::{App, MouseButton, Renderer, VirtualKeyCode, Window};
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -17,11 +17,16 @@ impl App for MapApp {
         self.tile_renderer
             .add_text([0, 0], "Test!", [1.0, 0.0, 0.0]);
         self.tile_renderer
-            .add_ascii(self.pos, b'a', [1.0, 0.0, 0.0]);
+            .add_ascii(self.pos, b'@', [1.0, 0.0, 0.0]);
 
         renderer.start([0.0, 0.0, 0.0]);
         self.tile_renderer.render(renderer);
         renderer.finish();
+    }
+
+    fn on_button_released(&mut self, position: [u32; 2], button: MouseButton) {
+        println!("Button '{:?}' released at {:?}", button, position);
+        self.pos = position;
     }
 
     fn on_key_released(&mut self, key: VirtualKeyCode) {

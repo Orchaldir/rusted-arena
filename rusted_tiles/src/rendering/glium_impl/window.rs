@@ -39,6 +39,9 @@ impl Window for GliumWindow {
         let cb = glutin::ContextBuilder::new();
         let display = glium::Display::new(wb, cb, &event_loop).unwrap();
         let mut renderer = GliumRenderer::new(display);
+        let mut mouse_index = [0 as u32, 0 as u32];
+        let height = self.tiles[1];
+        let tile_size = self.tile_size;
 
         event_loop.run(move |event, _, control_flow| {
             let next_frame_time =
@@ -57,7 +60,17 @@ impl Window for GliumWindow {
                                 let mut reference = app.borrow_mut();
                                 reference.on_key_released(key);
                             }
-                            return;
+                        }
+                    }
+                    glutin::event::WindowEvent::CursorMoved { position, .. } => {
+                        mouse_index[0] = position.x as u32 / tile_size[0];
+                        mouse_index[1] = height - 1 - position.y as u32 / tile_size[1];
+                        return;
+                    }
+                    glutin::event::WindowEvent::MouseInput { state, button, .. } => {
+                        if state == glutin::event::ElementState::Released {
+                            let mut reference = app.borrow_mut();
+                            reference.on_button_released(mouse_index, button);
                         }
                     }
                     _ => return,
