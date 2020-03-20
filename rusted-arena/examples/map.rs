@@ -1,6 +1,6 @@
 extern crate rusted_tiles;
 
-use rusted_tiles::rendering::glium::window::GliumWindow;
+use rusted_tiles::rendering::glium_impl::window::GliumWindow;
 use rusted_tiles::rendering::tile::TileRenderer;
 use rusted_tiles::rendering::{App, Renderer, Window};
 use std::cell::RefCell;

@@ -2,7 +2,7 @@ extern crate glium;
 extern crate rusted_tiles;
 
 use rusted_tiles::rendering::colored::ColoredTriangleBuilder;
-use rusted_tiles::rendering::glium::GliumRenderer;
+use rusted_tiles::rendering::glium_impl::GliumRenderer;
 use rusted_tiles::rendering::Renderer;
 
 fn main() {

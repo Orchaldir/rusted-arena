@@ -1,6 +1,6 @@
 pub mod ascii;
 pub mod colored;
-pub mod glium;
+pub mod glium_impl;
 pub mod testing;
 pub mod textured;
 pub mod tile;
