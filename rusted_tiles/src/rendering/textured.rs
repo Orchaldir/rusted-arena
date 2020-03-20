@@ -54,6 +54,10 @@ impl TexturedTriangleBuilder {
     pub fn get(&self) -> &Vec<TexturedVertex> {
         &self.vertices
     }
+
+    pub fn clear(&mut self) {
+        self.vertices.clear();
+    }
 }
 
 #[cfg(test)]

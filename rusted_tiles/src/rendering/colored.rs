@@ -41,6 +41,10 @@ impl ColoredTriangleBuilder {
         self.vertices.push(ColoredVertex { position, color });
     }
 
+    pub fn clear(&mut self) {
+        self.vertices.clear();
+    }
+
     pub fn get(&self) -> &Vec<ColoredVertex> {
         &self.vertices
     }

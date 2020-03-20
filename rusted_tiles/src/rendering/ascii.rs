@@ -28,6 +28,10 @@ impl AsciiBuilder {
         self.builder.add_tile(position, size, tc, TC_SIZE, color);
     }
 
+    pub fn clear(&mut self) {
+        self.builder.clear();
+    }
+
     pub fn get(&self) -> &Vec<TexturedVertex> {
         self.builder.get()
     }

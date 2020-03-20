@@ -81,6 +81,11 @@ impl TileRenderer {
         [self.tile_size[0] * size, self.tile_size[1] * size]
     }
 
+    pub fn clear(&mut self) {
+        self.colored_builder.clear();
+        self.ascii_builder.clear();
+    }
+
     pub fn render(&self, renderer: &mut dyn Renderer) {
         renderer.render_colored(self.colored_builder.get());
         renderer.render_textured(self.ascii_builder.get());
