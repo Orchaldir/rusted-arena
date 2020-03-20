@@ -121,6 +121,20 @@ mod tests {
     }
 
     #[test]
+    fn test_add_polygon() {
+        let mut renderer = TileRenderer::new([100.0, 200.0], [10.0, 20.0]);
+
+        renderer.add_polygon([3, 4], &[[0.0, 0.0], [1.0, 0.0], [0.5, 1.0]], COLOR);
+
+        let vertices = renderer.get_colored();
+
+        assert_eq!(vertices.len(), 3);
+        assert_colored(&vertices[0], P00, COLOR);
+        assert_colored(&vertices[1], P10, COLOR);
+        assert_colored(&vertices[2], [135.0, 300.0], COLOR);
+    }
+
+    #[test]
     fn test_add_ascii() {
         let mut renderer = TileRenderer::new([100.0, 200.0], [10.0, 20.0]);
 

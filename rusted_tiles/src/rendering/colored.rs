@@ -70,6 +70,46 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
+    fn test_add_polygon_with_no_corners() {
+        ColoredTriangleBuilder::default().add_polygon(&[], COLOR);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_add_polygon_with_one_corner() {
+        ColoredTriangleBuilder::default().add_polygon(&[[0.0, 0.0]], COLOR);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_add_polygon_with_two_corners() {
+        ColoredTriangleBuilder::default().add_polygon(&[[0.0, 0.0], [1.0, 0.0]], COLOR);
+    }
+
+    #[test]
+    fn test_add_polygon() {
+        let mut builder = ColoredTriangleBuilder::default();
+
+        let p = [2.3, 6.5];
+
+        builder.add_polygon(&[P00, P10, P11, p, P01], COLOR);
+
+        let vertices = builder.get();
+
+        assert_eq!(vertices.len(), 9);
+        assert_colored(&vertices[0], P00, COLOR);
+        assert_colored(&vertices[1], P10, COLOR);
+        assert_colored(&vertices[2], P11, COLOR);
+        assert_colored(&vertices[3], P00, COLOR);
+        assert_colored(&vertices[4], P11, COLOR);
+        assert_colored(&vertices[5], p, COLOR);
+        assert_colored(&vertices[6], P00, COLOR);
+        assert_colored(&vertices[7], p, COLOR);
+        assert_colored(&vertices[8], P01, COLOR);
+    }
+
+    #[test]
     fn test_add_tile() {
         let mut builder = ColoredTriangleBuilder::default();
 
