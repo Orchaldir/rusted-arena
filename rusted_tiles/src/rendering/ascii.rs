@@ -1,9 +1,10 @@
+use crate::math::color::*;
 use crate::rendering::textured::*;
 
 const N: u8 = 16;
 const TC_C: f32 = 1.0 / N as f32;
 const TC_SIZE: [f32; 2] = [TC_C, TC_C];
-const INVALID_COLOR: [f32; 3] = [1.0, 0.08, 0.58];
+const INVALID_COLOR: Color = PINK;
 
 #[derive(Default)]
 pub struct AsciiBuilder {
@@ -11,7 +12,7 @@ pub struct AsciiBuilder {
 }
 
 impl AsciiBuilder {
-    pub fn add_char(&mut self, position: [f32; 2], size: [f32; 2], c: char, color: [f32; 3]) {
+    pub fn add_char(&mut self, position: [f32; 2], size: [f32; 2], c: char, color: Color) {
         if c.is_ascii() {
             self.add_u8(position, size, c as u8, color);
         } else {
@@ -19,7 +20,7 @@ impl AsciiBuilder {
         }
     }
 
-    pub fn add_u8(&mut self, position: [f32; 2], size: [f32; 2], ascii: u8, color: [f32; 3]) {
+    pub fn add_u8(&mut self, position: [f32; 2], size: [f32; 2], ascii: u8, color: Color) {
         let row: u8 = ascii / N;
         let column: u8 = ascii % N;
 
@@ -36,13 +37,7 @@ impl AsciiBuilder {
         self.builder.get()
     }
 
-    pub fn add_string(
-        &mut self,
-        position: [f32; 2],
-        size: [f32; 2],
-        string: &str,
-        color: [f32; 3],
-    ) {
+    pub fn add_string(&mut self, position: [f32; 2], size: [f32; 2], string: &str, color: Color) {
         let mut new_p = position;
         for c in string.chars() {
             self.add_char(new_p, size, c, color);

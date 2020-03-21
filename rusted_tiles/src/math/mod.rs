@@ -1,3 +1,5 @@
+pub mod color;
+
 pub fn get_corners(position: [f32; 2], size: [f32; 2]) -> [[f32; 2]; 4] {
     let corner00 = position;
     let corner10 = [position[0] + size[0], position[1]];

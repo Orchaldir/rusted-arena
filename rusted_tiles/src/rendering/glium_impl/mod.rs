@@ -3,6 +3,7 @@ pub mod texture;
 pub mod window;
 
 use super::Renderer;
+use crate::math::color::Color;
 use crate::rendering::colored::ColoredVertex;
 use crate::rendering::textured::TexturedVertex;
 use glium::{Program, Surface};
@@ -37,9 +38,9 @@ impl GliumRenderer {
 }
 
 impl Renderer for GliumRenderer {
-    fn start(&mut self, color: [f32; 3]) {
+    fn start(&mut self, color: Color) {
         let mut target = self.display.draw();
-        target.clear_color(color[0], color[1], color[2], 1.0);
+        target.clear_color(color.r, color.g, color.b, 1.0);
         self.target = Some(target);
     }
 

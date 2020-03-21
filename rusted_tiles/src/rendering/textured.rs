@@ -1,3 +1,4 @@
+use crate::math::color::*;
 use crate::math::get_corners;
 
 #[derive(Copy, Clone)]
@@ -21,7 +22,7 @@ impl TexturedTriangleBuilder {
         tc_a: [f32; 2],
         tc_b: [f32; 2],
         tc_c: [f32; 2],
-        color: [f32; 3],
+        color: Color,
     ) {
         self.add(a, tc_a, color);
         self.add(b, tc_b, color);
@@ -34,7 +35,7 @@ impl TexturedTriangleBuilder {
         size: [f32; 2],
         tc: [f32; 2],
         tc_size: [f32; 2],
-        color: [f32; 3],
+        color: Color,
     ) {
         let [c00, c10, c01, c11] = get_corners(position, size);
         let [tc00, tc10, tc01, tc11] = get_corners(tc, tc_size);
@@ -43,11 +44,11 @@ impl TexturedTriangleBuilder {
         self.add_triangle(c00, c11, c01, tc00, tc11, tc01, color);
     }
 
-    fn add(&mut self, position: [f32; 2], tc: [f32; 2], color: [f32; 3]) {
+    fn add(&mut self, position: [f32; 2], tc: [f32; 2], color: Color) {
         self.vertices.push(TexturedVertex {
             position,
             tc,
-            color,
+            color: color.to_array(),
         });
     }
 

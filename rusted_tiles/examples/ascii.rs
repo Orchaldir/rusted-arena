@@ -1,6 +1,7 @@
 extern crate glium;
 extern crate rusted_tiles;
 
+use rusted_tiles::math::color::*;
 use rusted_tiles::rendering::ascii::AsciiBuilder;
 use rusted_tiles::rendering::glium_impl::GliumRenderer;
 use rusted_tiles::rendering::Renderer;
@@ -16,14 +17,14 @@ fn main() {
 
     let mut builder = AsciiBuilder::default();
 
-    builder.add_u8([-0.5, -0.5], [0.5, 0.5], b'a', [1.0, 0.0, 0.0]);
-    builder.add_char([0.0, -0.5], [0.5, 0.5], 'b', [0.0, 1.0, 0.0]);
-    builder.add_string([0.0, 0.2], [0.1, 0.1], "Test?", [1.0, 1.0, 1.0]);
+    builder.add_u8([-0.5, -0.5], [0.5, 0.5], b'a', RED);
+    builder.add_char([0.0, -0.5], [0.5, 0.5], 'b', GREEN);
+    builder.add_string([0.0, 0.2], [0.1, 0.1], "Test?", WHITE);
     builder.add_string(
         [-1.0, 0.4],
         [0.05, 0.1],
         "Non-Ascii Symbols are replaced with '🎉'!",
-        [1.0, 1.0, 0.0],
+        YELLOW,
     );
 
     let mut render = GliumRenderer::new(display);
@@ -45,7 +46,7 @@ fn main() {
             _ => return,
         }
 
-        render.start([0.0, 0.0, 1.0]);
+        render.start(BLUE);
         render.render_textured(builder.get());
         render.finish();
     });

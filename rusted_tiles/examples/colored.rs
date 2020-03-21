@@ -1,6 +1,7 @@
 extern crate glium;
 extern crate rusted_tiles;
 
+use rusted_tiles::math::color::*;
 use rusted_tiles::rendering::colored::ColoredTriangleBuilder;
 use rusted_tiles::rendering::glium_impl::GliumRenderer;
 use rusted_tiles::rendering::Renderer;
@@ -16,12 +17,9 @@ fn main() {
 
     let mut builder = ColoredTriangleBuilder::default();
 
-    builder.add_triangle([-0.5, -0.5], [0.0, 0.5], [0.5, -0.25], [0.0, 1.0, 0.0]);
-    builder.add_tile([-1.0, -1.0], [0.5, 0.5], [1.0, 0.0, 0.0]);
-    builder.add_polygon(
-        &[[0.5, -1.0], [1.0, -1.0], [0.8, 0.8], [0.5, 0.1]],
-        [1.0, 1.0, 0.0],
-    );
+    builder.add_triangle([-0.5, -0.5], [0.0, 0.5], [0.5, -0.25], GREEN);
+    builder.add_tile([-1.0, -1.0], [0.5, 0.5], RED);
+    builder.add_polygon(&[[0.5, -1.0], [1.0, -1.0], [0.8, 0.8], [0.5, 0.1]], YELLOW);
 
     let mut render = GliumRenderer::new(display);
 
@@ -42,7 +40,7 @@ fn main() {
             _ => return,
         }
 
-        render.start([0.0, 0.0, 1.0]);
+        render.start(BLUE);
         render.render_colored(builder.get());
         render.finish();
     });

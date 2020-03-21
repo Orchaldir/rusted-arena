@@ -1,6 +1,7 @@
 extern crate glium;
 extern crate rusted_tiles;
 
+use rusted_tiles::math::color::*;
 use rusted_tiles::rendering::glium_impl::GliumRenderer;
 use rusted_tiles::rendering::textured::TexturedTriangleBuilder;
 use rusted_tiles::rendering::Renderer;
@@ -16,13 +17,7 @@ fn main() {
 
     let mut builder = TexturedTriangleBuilder::default();
 
-    builder.add_tile(
-        [-0.5, -0.5],
-        [1.0, 1.0],
-        [0.0, 0.0],
-        [1.0, 1.0],
-        [1.0, 0.0, 0.0],
-    );
+    builder.add_tile([-0.5, -0.5], [1.0, 1.0], [0.0, 0.0], [1.0, 1.0], RED);
 
     let mut render = GliumRenderer::new(display);
 
@@ -43,7 +38,7 @@ fn main() {
             _ => return,
         }
 
-        render.start([0.0, 0.0, 1.0]);
+        render.start(BLUE);
         render.render_textured(builder.get());
         render.finish();
     });

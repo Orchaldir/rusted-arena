@@ -1,6 +1,7 @@
 use super::ascii::AsciiBuilder;
 use super::colored::ColoredTriangleBuilder;
 use super::Renderer;
+use crate::math::color::*;
 
 pub struct TileRenderer {
     ascii_builder: AsciiBuilder,
@@ -19,14 +20,14 @@ impl TileRenderer {
         }
     }
 
-    pub fn add_tile(&mut self, index: [u32; 2], color: [f32; 3]) {
+    pub fn add_tile(&mut self, index: [u32; 2], color: Color) {
         let position = self.calculate_position(index);
 
         self.colored_builder
             .add_tile(position, self.tile_size, color);
     }
 
-    pub fn add_polygon(&mut self, index: [u32; 2], corners: &[[f32; 2]], color: [f32; 3]) {
+    pub fn add_polygon(&mut self, index: [u32; 2], corners: &[[f32; 2]], color: Color) {
         let pos = self.calculate_position(index);
         let polygon: Vec<[f32; 2]> = corners
             .iter()
@@ -41,28 +42,28 @@ impl TileRenderer {
         self.colored_builder.add_polygon(&polygon, color);
     }
 
-    pub fn add_ascii(&mut self, index: [u32; 2], ascii: u8, color: [f32; 3]) {
+    pub fn add_ascii(&mut self, index: [u32; 2], ascii: u8, color: Color) {
         let position = self.calculate_position(index);
 
         self.ascii_builder
             .add_u8(position, self.tile_size, ascii, color);
     }
 
-    pub fn add_big_ascii(&mut self, index: [u32; 2], size: u32, ascii: u8, color: [f32; 3]) {
+    pub fn add_big_ascii(&mut self, index: [u32; 2], size: u32, ascii: u8, color: Color) {
         let position = self.calculate_position(index);
         let tile_size = self.calculate_tile_size(size);
 
         self.ascii_builder.add_u8(position, tile_size, ascii, color);
     }
 
-    pub fn add_text(&mut self, index: [u32; 2], string: &str, color: [f32; 3]) {
+    pub fn add_text(&mut self, index: [u32; 2], string: &str, color: Color) {
         let position = self.calculate_position(index);
 
         self.ascii_builder
             .add_string(position, self.tile_size, string, color);
     }
 
-    pub fn add_big_text(&mut self, index: [u32; 2], size: u32, string: &str, color: [f32; 3]) {
+    pub fn add_big_text(&mut self, index: [u32; 2], size: u32, string: &str, color: Color) {
         let position = self.calculate_position(index);
         let tile_size = self.calculate_tile_size(size);
 
@@ -114,7 +115,11 @@ mod tests {
     const P01: [f32; 2] = [130.0, 300.0];
     const P11: [f32; 2] = [140.0, 300.0];
     const POS: [[f32; 2]; 4] = [P00, P10, P01, P11];
-    const COLOR: [f32; 3] = [0.1, 0.2, 0.3];
+    const COLOR: Color = Color {
+        r: 0.1,
+        g: 0.2,
+        b: 0.3,
+    };
 
     #[test]
     fn test_add_tile() {

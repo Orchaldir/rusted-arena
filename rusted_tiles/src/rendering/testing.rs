@@ -1,3 +1,4 @@
+use crate::math::color::*;
 use crate::rendering::colored::ColoredVertex;
 use crate::rendering::textured::TexturedVertex;
 
@@ -22,9 +23,13 @@ pub const Q01: [f32; 2] = [0.9375, 0.8125];
 pub const Q11: [f32; 2] = [1.0, 0.8125];
 pub const TC_Q: [[f32; 2]; 4] = [Q00, Q10, Q01, Q11];
 
-pub const COLOR: [f32; 3] = [0.4, 0.5, 0.6];
+pub const COLOR: Color = Color {
+    r: 0.4,
+    g: 0.5,
+    b: 0.6,
+};
 
-pub fn assert_tile(vertices: &[ColoredVertex], pos: [[f32; 2]; 4], color: [f32; 3]) {
+pub fn assert_tile(vertices: &[ColoredVertex], pos: [[f32; 2]; 4], color: Color) {
     assert_eq!(vertices.len(), 6);
     assert_colored(&vertices[0], pos[0], color);
     assert_colored(&vertices[1], pos[1], color);
@@ -38,7 +43,7 @@ pub fn assert_textured_tile(
     vertices: &[TexturedVertex],
     pos: [[f32; 2]; 4],
     tcs: [[f32; 2]; 4],
-    color: [f32; 3],
+    color: Color,
 ) {
     assert_eq!(vertices.len(), 6);
     assert_textured(&vertices[0], pos[0], tcs[0], color);
@@ -49,13 +54,13 @@ pub fn assert_textured_tile(
     assert_textured(&vertices[5], pos[2], tcs[2], color);
 }
 
-pub fn assert_colored(vertex: &ColoredVertex, pos: [f32; 2], color: [f32; 3]) {
+pub fn assert_colored(vertex: &ColoredVertex, pos: [f32; 2], color: Color) {
     assert_eq!(vertex.position, pos);
-    assert_eq!(vertex.color, color);
+    assert_eq!(vertex.color, color.to_array());
 }
 
-pub fn assert_textured(vertex: &TexturedVertex, pos: [f32; 2], tc: [f32; 2], color: [f32; 3]) {
+pub fn assert_textured(vertex: &TexturedVertex, pos: [f32; 2], tc: [f32; 2], color: Color) {
     assert_eq!(vertex.position, pos);
     assert_eq!(vertex.tc, tc);
-    assert_eq!(vertex.color, color);
+    assert_eq!(vertex.color, color.to_array());
 }

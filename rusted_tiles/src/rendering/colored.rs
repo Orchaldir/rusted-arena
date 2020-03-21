@@ -1,3 +1,4 @@
+use crate::math::color::*;
 use crate::math::get_corners;
 
 #[derive(Copy, Clone)]
@@ -12,20 +13,20 @@ pub struct ColoredTriangleBuilder {
 }
 
 impl ColoredTriangleBuilder {
-    pub fn add_triangle(&mut self, a: [f32; 2], b: [f32; 2], c: [f32; 2], color: [f32; 3]) {
+    pub fn add_triangle(&mut self, a: [f32; 2], b: [f32; 2], c: [f32; 2], color: Color) {
         self.add(a, color);
         self.add(b, color);
         self.add(c, color);
     }
 
-    pub fn add_tile(&mut self, position: [f32; 2], size: [f32; 2], color: [f32; 3]) {
+    pub fn add_tile(&mut self, position: [f32; 2], size: [f32; 2], color: Color) {
         let [corner00, corner10, corner01, corner11] = get_corners(position, size);
 
         self.add_triangle(corner00, corner10, corner11, color);
         self.add_triangle(corner00, corner11, corner01, color);
     }
 
-    pub fn add_polygon(&mut self, corners: &[[f32; 2]], color: [f32; 3]) {
+    pub fn add_polygon(&mut self, corners: &[[f32; 2]], color: Color) {
         if corners.len() < 3 {
             panic!("Polygon must have 3 corners!");
         }
@@ -37,8 +38,11 @@ impl ColoredTriangleBuilder {
         }
     }
 
-    fn add(&mut self, position: [f32; 2], color: [f32; 3]) {
-        self.vertices.push(ColoredVertex { position, color });
+    fn add(&mut self, position: [f32; 2], color: Color) {
+        self.vertices.push(ColoredVertex {
+            position,
+            color: color.to_array(),
+        });
     }
 
     pub fn clear(&mut self) {
@@ -50,6 +54,7 @@ impl ColoredTriangleBuilder {
     }
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -132,3 +137,4 @@ mod tests {
         assert!(builder.get().is_empty());
     }
 }
+*/

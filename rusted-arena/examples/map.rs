@@ -1,5 +1,6 @@
 extern crate rusted_tiles;
 
+use rusted_tiles::math::color::*;
 use rusted_tiles::rendering::glium_impl::window::GliumWindow;
 use rusted_tiles::rendering::tile::TileRenderer;
 use rusted_tiles::rendering::{App, MouseButton, Renderer, VirtualKeyCode, Window};
@@ -14,12 +15,10 @@ pub struct MapApp {
 impl App for MapApp {
     fn render(&mut self, renderer: &mut dyn Renderer) {
         self.tile_renderer.clear();
-        self.tile_renderer
-            .add_text([0, 0], "Test!", [1.0, 0.0, 0.0]);
-        self.tile_renderer
-            .add_ascii(self.pos, b'@', [1.0, 0.0, 0.0]);
+        self.tile_renderer.add_text([0, 0], "Test!", RED);
+        self.tile_renderer.add_ascii(self.pos, b'@', RED);
 
-        renderer.start([0.0, 0.0, 0.0]);
+        renderer.start(BLACK);
         self.tile_renderer.render(renderer);
         renderer.finish();
     }
