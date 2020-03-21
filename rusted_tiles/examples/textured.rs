@@ -14,7 +14,7 @@ impl App for MapApp {
     fn render(&mut self, renderer: &mut dyn Renderer) {
         let mut builder = TexturedTriangleBuilder::default();
 
-        builder.add_tile([-0.5, -0.5], [1.0, 1.0], [0.0, 0.0], [1.0, 1.0], RED);
+        builder.add_tile([200.0, 100.0], [400.0, 400.0], [0.0, 0.0], [1.0, 1.0], RED);
 
         renderer.start(BLACK);
         renderer.render_textured(builder.get());

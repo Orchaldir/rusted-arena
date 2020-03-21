@@ -6,6 +6,7 @@ use super::Renderer;
 use crate::math::color::Color;
 use crate::rendering::colored::ColoredVertex;
 use crate::rendering::textured::TexturedVertex;
+use cgmath::ortho;
 use glium::{Program, Surface};
 
 const INDICES: glium::index::NoIndices =
@@ -17,15 +18,19 @@ pub struct GliumRenderer {
     colored_program: Program,
     textured_program: Program,
     texture: glium::texture::Texture2d,
+    matrix: cgmath::Matrix4<f32>,
 }
 
 impl GliumRenderer {
-    pub fn new(display: glium::Display) -> GliumRenderer {
+    pub fn new(display: glium::Display, size: [u32; 2]) -> GliumRenderer {
         let colored_program = shader::load_program(&display, "colored.vertex", "colored.fragment");
         let textured_program =
             shader::load_program(&display, "textured.vertex", "textured.fragment");
 
         let texture = texture::load_texture(&display, "ascii.png").unwrap();
+
+        let matrix: cgmath::Matrix4<f32> =
+            ortho(0.0, size[0] as f32, 0.0, size[1] as f32, -1.0, 1.0);
 
         GliumRenderer {
             display,
@@ -33,6 +38,7 @@ impl GliumRenderer {
             colored_program,
             textured_program,
             texture,
+            matrix,
         }
     }
 }
@@ -48,12 +54,17 @@ impl Renderer for GliumRenderer {
         let target = self.target.as_mut().unwrap();
         let vertex_buffer = glium::VertexBuffer::new(&self.display, vertices).unwrap();
 
+        let uniforms = uniform! {
+            matrix: Into::<[[f32; 4]; 4]>::into(self.matrix),
+            tex: &self.texture,
+        };
+
         target
             .draw(
                 &vertex_buffer,
                 &INDICES,
                 &self.colored_program,
-                &glium::uniforms::EmptyUniforms,
+                &uniforms,
                 &Default::default(),
             )
             .unwrap();
@@ -64,6 +75,7 @@ impl Renderer for GliumRenderer {
         let vertex_buffer = glium::VertexBuffer::new(&self.display, vertices).unwrap();
 
         let uniforms = uniform! {
+            matrix: Into::<[[f32; 4]; 4]>::into(self.matrix),
             tex: &self.texture,
         };
 

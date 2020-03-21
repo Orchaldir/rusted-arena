@@ -14,9 +14,17 @@ impl App for MapApp {
     fn render(&mut self, renderer: &mut dyn Renderer) {
         let mut builder = ColoredTriangleBuilder::default();
 
-        builder.add_triangle([-0.5, -0.5], [0.0, 0.5], [0.5, -0.25], GREEN);
-        builder.add_tile([-1.0, -1.0], [0.5, 0.5], RED);
-        builder.add_polygon(&[[0.5, -1.0], [1.0, -1.0], [0.8, 0.8], [0.5, 0.1]], YELLOW);
+        builder.add_triangle([400.0, 300.0], [600.0, 300.0], [500.0, 400.0], GREEN);
+        builder.add_tile([100.0, 100.0], [100.0, 100.0], RED);
+        builder.add_polygon(
+            &[
+                [200.0, 300.0],
+                [200.0, 400.0],
+                [250.0, 500.0],
+                [300.0, 400.0],
+            ],
+            YELLOW,
+        );
 
         renderer.start(BLUE);
         renderer.render_colored(builder.get());

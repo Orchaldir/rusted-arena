@@ -14,12 +14,12 @@ impl App for MapApp {
     fn render(&mut self, renderer: &mut dyn Renderer) {
         let mut builder = AsciiBuilder::default();
 
-        builder.add_u8([-0.5, -0.5], [0.5, 0.5], b'a', RED);
-        builder.add_char([0.0, -0.5], [0.5, 0.5], 'b', GREEN);
-        builder.add_string([0.0, 0.2], [0.1, 0.1], "Test?", WHITE);
+        builder.add_u8([200.0, 200.0], [100.0, 100.0], b'a', RED);
+        builder.add_char([300.0, 200.0], [100.0, 100.0], 'b', GREEN);
+        builder.add_string([300.0, 500.0], [20.0, 20.0], "Test?", WHITE);
         builder.add_string(
-            [-1.0, 0.4],
-            [0.05, 0.1],
+            [0.0, 50.0],
+            [20.0, 20.0],
             "Non-Ascii Symbols are replaced with '🎉'!",
             YELLOW,
         );

@@ -41,7 +41,7 @@ impl App for MapApp {
 }
 
 fn main() {
-    let mut window = GliumWindow::new("Map Example", [40, 20], [16, 16]);
+    let mut window = GliumWindow::new("Map Example", [40, 30], [20, 20]);
     let app = Rc::new(RefCell::new(MapApp {
         pos: [10, 10],
         tile_renderer: window.get_tile_renderer(),

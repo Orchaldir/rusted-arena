@@ -3,42 +3,45 @@ use crate::rendering::tile::TileRenderer;
 use crate::rendering::{App, Window};
 use glium::glutin;
 use std::cell::RefCell;
+use std::cmp;
 use std::rc::Rc;
 
 pub struct GliumWindow {
     title: &'static str,
     tiles: [u32; 2],
     tile_size: [u32; 2],
+    size: [u32; 2],
 }
 
 impl GliumWindow {
     pub fn new(title: &'static str, tiles: [u32; 2], tile_size: [u32; 2]) -> GliumWindow {
+        let size = [tiles[0] * tile_size[0], tiles[1] * tile_size[1]];
         GliumWindow {
             title,
             tiles,
             tile_size,
+            size,
         }
     }
 }
 
 impl Window for GliumWindow {
     fn get_tile_renderer(&self) -> TileRenderer {
-        let tile_size = [2.0 / self.tiles[0] as f32, 2.0 / self.tiles[1] as f32];
-        TileRenderer::new([-1.0, -1.0], tile_size)
+        let tile_size = [self.tile_size[0] as f32, self.tile_size[1] as f32];
+        TileRenderer::new([0.0, 0.0], tile_size)
     }
 
     fn run(&mut self, app: Rc<RefCell<dyn App>>) -> ! {
-        let size = glutin::dpi::LogicalSize::new(
-            self.tiles[0] * self.tile_size[0],
-            self.tiles[1] * self.tile_size[1],
-        );
+        let size = glutin::dpi::LogicalSize::new(self.size[0], self.size[1]);
         let event_loop = glutin::event_loop::EventLoop::new();
         let wb = glutin::window::WindowBuilder::new()
             .with_title(self.title)
+            .with_resizable(false)
             .with_inner_size(size);
         let cb = glutin::ContextBuilder::new();
         let display = glium::Display::new(wb, cb, &event_loop).unwrap();
-        let mut renderer = GliumRenderer::new(display);
+
+        let mut renderer = GliumRenderer::new(display, self.size);
         let mut mouse_index = [0 as u32, 0 as u32];
         let height = self.tiles[1];
         let tile_size = self.tile_size;
@@ -64,7 +67,7 @@ impl Window for GliumWindow {
                     }
                     glutin::event::WindowEvent::CursorMoved { position, .. } => {
                         mouse_index[0] = position.x as u32 / tile_size[0];
-                        mouse_index[1] = height - 1 - position.y as u32 / tile_size[1];
+                        mouse_index[1] = cmp::max(height - position.y as u32 / tile_size[1], 1) - 1;
                         return;
                     }
                     glutin::event::WindowEvent::MouseInput { state, button, .. } => {
