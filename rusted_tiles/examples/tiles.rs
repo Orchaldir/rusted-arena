@@ -1,50 +1,40 @@
-extern crate glium;
 extern crate rusted_tiles;
 
 use rusted_tiles::math::color::*;
-use rusted_tiles::rendering::glium_impl::GliumRenderer;
+use rusted_tiles::rendering::glium_impl::window::GliumWindow;
 use rusted_tiles::rendering::tile::TileRenderer;
-use rusted_tiles::rendering::Renderer;
+use rusted_tiles::rendering::{App, MouseButton, Renderer, VirtualKeyCode, Window};
+use std::cell::RefCell;
+use std::rc::Rc;
+
+pub struct MapApp {
+    tile_renderer: TileRenderer,
+}
+
+impl App for MapApp {
+    fn render(&mut self, renderer: &mut dyn Renderer) {
+        self.tile_renderer.add_tile([0, 0], RED);
+        self.tile_renderer
+            .add_polygon([30, 15], &[[0.0, 0.2], [1.0, 0.2], [0.5, 1.0]], RED);
+        self.tile_renderer.add_ascii([1, 0], b'@', WHITE);
+        self.tile_renderer.add_big_ascii([5, 10], 3, b'D', WHITE);
+        self.tile_renderer.add_text([10, 15], "Hello", CYAN);
+        self.tile_renderer.add_big_text([15, 5], 5, "Big", YELLOW);
+
+        renderer.start(BLACK);
+        self.tile_renderer.render(renderer);
+        renderer.finish();
+    }
+
+    fn on_button_released(&mut self, _: [u32; 2], _: MouseButton) {}
+    fn on_key_released(&mut self, _: VirtualKeyCode) {}
+}
 
 fn main() {
-    #[allow(unused_imports)]
-    use glium::{glutin, Surface};
+    let mut window = GliumWindow::new("Example with tiles", [40, 20], [16, 16]);
+    let app = Rc::new(RefCell::new(MapApp {
+        tile_renderer: window.get_tile_renderer(),
+    }));
 
-    let event_loop = glutin::event_loop::EventLoop::new();
-    let wb = glutin::window::WindowBuilder::new().with_title("Example with tiles");
-    let cb = glutin::ContextBuilder::new();
-    let display = glium::Display::new(wb, cb, &event_loop).unwrap();
-
-    let mut tile_renderer = TileRenderer::new([-1.0, -1.0], [0.05, 0.1]);
-
-    tile_renderer.add_tile([0, 0], RED);
-    tile_renderer.add_polygon([30, 15], &[[0.0, 0.2], [1.0, 0.2], [0.5, 1.0]], RED);
-    tile_renderer.add_ascii([1, 0], b'@', WHITE);
-    tile_renderer.add_big_ascii([5, 10], 3, b'D', WHITE);
-    tile_renderer.add_text([10, 15], "Hello", CYAN);
-    tile_renderer.add_big_text([15, 5], 5, "Big", YELLOW);
-
-    let mut render = GliumRenderer::new(display);
-
-    event_loop.run(move |event, _, control_flow| {
-        let next_frame_time =
-            std::time::Instant::now() + std::time::Duration::from_nanos(16_666_667);
-        *control_flow = glutin::event_loop::ControlFlow::WaitUntil(next_frame_time);
-
-        match event {
-            glutin::event::Event::WindowEvent { event, .. } => match event {
-                glutin::event::WindowEvent::CloseRequested => {
-                    *control_flow = glutin::event_loop::ControlFlow::Exit;
-                    return;
-                }
-                _ => return,
-            },
-            glutin::event::Event::RedrawRequested(_) => (),
-            _ => return,
-        }
-
-        render.start(BLACK);
-        tile_renderer.render(&mut render);
-        render.finish();
-    });
+    window.run(app.clone());
 }
