@@ -34,7 +34,7 @@ pub fn assert_tile(vertices: &[ColoredVertex], pos: [[f32; 2]; 4], color: [f32; 
     assert_colored(&vertices[5], pos[2], color);
 }
 
-pub fn assert_u8(
+pub fn assert_textured_tile(
     vertices: &[TexturedVertex],
     pos: [[f32; 2]; 4],
     tcs: [[f32; 2]; 4],

@@ -145,7 +145,7 @@ mod tests {
 
         renderer.add_ascii([3, 4], b'A', COLOR);
 
-        assert_u8(renderer.get_textured(), POS, TC_A, COLOR);
+        assert_textured_tile(renderer.get_textured(), POS, TC_A, COLOR);
     }
 
     #[test]
@@ -160,6 +160,18 @@ mod tests {
 
         renderer.add_big_ascii([5, 10], 2, b'?', COLOR);
 
-        assert_u8(renderer.get_textured(), big, TC_Q, COLOR);
+        assert_textured_tile(renderer.get_textured(), big, TC_Q, COLOR);
+    }
+
+    #[test]
+    fn test_clear() {
+        let mut renderer = TileRenderer::new([100.0, 200.0], [10.0, 20.0]);
+
+        renderer.add_tile([3, 4], COLOR);
+        renderer.add_ascii([6, 0], b'P', COLOR);
+        renderer.clear();
+
+        assert!(renderer.get_colored().is_empty());
+        assert!(renderer.get_textured().is_empty());
     }
 }

@@ -62,7 +62,7 @@ mod tests {
 
         builder.add_u8(P00, SIZE, b'A', COLOR);
 
-        assert_u8(builder.get(), POS, TC_A, COLOR);
+        assert_textured_tile(builder.get(), POS, TC_A, COLOR);
     }
 
     #[test]
@@ -71,7 +71,7 @@ mod tests {
 
         builder.add_char(P00, SIZE, 'A', COLOR);
 
-        assert_u8(builder.get(), POS, TC_A, COLOR);
+        assert_textured_tile(builder.get(), POS, TC_A, COLOR);
     }
 
     #[test]
@@ -80,6 +80,16 @@ mod tests {
 
         builder.add_char(P00, SIZE, '🎉', COLOR);
 
-        assert_u8(builder.get(), POS, TC_Q, INVALID_COLOR);
+        assert_textured_tile(builder.get(), POS, TC_Q, INVALID_COLOR);
+    }
+
+    #[test]
+    fn test_clear() {
+        let mut builder = AsciiBuilder::default();
+
+        builder.add_u8(P00, SIZE, b'W', COLOR);
+        builder.clear();
+
+        assert!(builder.get().is_empty());
     }
 }

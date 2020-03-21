@@ -63,20 +63,14 @@ impl TexturedTriangleBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    const SIZE: [f32; 2] = [0.5, 1.5];
-    const P00: [f32; 2] = [2.0, 4.0];
-    const P10: [f32; 2] = [2.5, 4.0];
-    const P01: [f32; 2] = [2.0, 5.5];
-    const P11: [f32; 2] = [2.5, 5.5];
+    use crate::rendering::testing::*;
 
     const TC_SIZE: [f32; 2] = [0.25, 0.35];
     const TC00: [f32; 2] = [0.1, 0.2];
     const TC10: [f32; 2] = [0.35, 0.2];
     const TC01: [f32; 2] = [0.1, 0.55];
     const TC11: [f32; 2] = [0.35, 0.55];
-
-    const COLOR: [f32; 3] = [0.1, 0.2, 0.3];
+    pub const TC: [[f32; 2]; 4] = [TC00, TC10, TC01, TC11];
 
     #[test]
     fn test_add_tile() {
@@ -84,20 +78,16 @@ mod tests {
 
         builder.add_tile(P00, SIZE, TC00, TC_SIZE, COLOR);
 
-        let vertices = builder.get();
-
-        assert_eq!(vertices.len(), 6);
-        assert_tile(&vertices[0], P00, TC00);
-        assert_tile(&vertices[1], P10, TC10);
-        assert_tile(&vertices[2], P11, TC11);
-        assert_tile(&vertices[3], P00, TC00);
-        assert_tile(&vertices[4], P11, TC11);
-        assert_tile(&vertices[5], P01, TC01);
+        assert_textured_tile(builder.get(), POS, TC, COLOR);
     }
 
-    fn assert_tile(vertex: &TexturedVertex, pos: [f32; 2], tc: [f32; 2]) {
-        assert_eq!(vertex.position, pos);
-        assert_eq!(vertex.tc, tc);
-        assert_eq!(vertex.color, COLOR);
+    #[test]
+    fn test_add_clear() {
+        let mut builder = TexturedTriangleBuilder::default();
+
+        builder.add_tile(P11, SIZE, TC11, TC_SIZE, COLOR);
+        builder.clear();
+
+        assert!(builder.get().is_empty());
     }
 }

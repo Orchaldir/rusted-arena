@@ -121,4 +121,14 @@ mod tests {
 
         assert_tile(builder.get(), POS, COLOR);
     }
+
+    #[test]
+    fn test_add_clear() {
+        let mut builder = ColoredTriangleBuilder::default();
+
+        builder.add_tile(P11, SIZE, COLOR);
+        builder.clear();
+
+        assert!(builder.get().is_empty());
+    }
 }
