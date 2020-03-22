@@ -1,7 +1,10 @@
 pub mod color;
+pub mod point;
 
-pub fn get_index(position: [u32; 2], size: [u32; 2]) -> usize {
-    ((position[1] * size[0]) + position[0]) as usize
+use point::Point;
+
+pub fn get_index(x: u32, y: u32, size: Point) -> usize {
+    ((y * size.x) + x) as usize
 }
 
 pub fn get_corners(position: [f32; 2], size: [f32; 2]) -> [[f32; 2]; 4] {

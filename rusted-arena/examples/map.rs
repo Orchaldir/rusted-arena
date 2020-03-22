@@ -2,6 +2,7 @@ extern crate rusted_tiles;
 
 use rusted_tiles::math::color::*;
 use rusted_tiles::math::get_index;
+use rusted_tiles::math::point::*;
 use rusted_tiles::rendering::glium_impl::window::GliumWindow;
 use rusted_tiles::rendering::tile::TileRenderer;
 use rusted_tiles::rendering::{App, MouseButton, Renderer, VirtualKeyCode, Window};
@@ -16,22 +17,22 @@ enum TileType {
 }
 
 pub struct TileMap {
-    size: [u32; 2],
+    size: Point,
     tiles: Vec<TileType>,
 }
 
 impl TileMap {
-    fn new(size: [u32; 2], default: TileType) -> TileMap {
-        let mut tiles = vec![default; (size[0] * size[1]) as usize];
+    fn new(size: Point, default: TileType) -> TileMap {
+        let mut tiles = vec![default; size.get_area()];
 
-        for x in 0..size[0] {
-            tiles[get_index([x, 0], size)] = TileType::Wall;
-            tiles[get_index([x, size[1] - 1], size)] = TileType::Wall;
+        for x in 0..size.x {
+            tiles[get_index(x, 0, size)] = TileType::Wall;
+            tiles[get_index(x, size.y - 1, size)] = TileType::Wall;
         }
 
-        for y in 0..size[1] {
-            tiles[get_index([0, y], size)] = TileType::Wall;
-            tiles[get_index([size[0] - 1, y], size)] = TileType::Wall;
+        for y in 0..size.y {
+            tiles[get_index(0, y, size)] = TileType::Wall;
+            tiles[get_index(size.x - 1, y, size)] = TileType::Wall;
         }
 
         TileMap { size, tiles }
@@ -52,7 +53,7 @@ impl TileMap {
             }
 
             x += 1;
-            if x >= self.size[0] {
+            if x >= self.size.x {
                 x = 0;
                 y += 1;
             }
@@ -60,7 +61,7 @@ impl TileMap {
     }
 
     fn can_move(&self, pos: [u32; 2]) -> bool {
-        self.tiles[get_index(pos, self.size)] == TileType::Floor
+        self.tiles[get_index(pos[0], pos[1], self.size)] == TileType::Floor
     }
 }
 
@@ -103,11 +104,11 @@ impl MapApp {
         let pos = [
             min(
                 max(self.pos[0] as i32 + delta_x, 0) as u32,
-                self.map.size[0] - 1,
+                self.map.size.x - 1,
             ),
             min(
                 max(self.pos[1] as i32 + delta_y, 0) as u32,
-                self.map.size[1] - 1,
+                self.map.size.y - 1,
             ),
         ];
 
@@ -121,7 +122,13 @@ fn main() {
     let size = [40, 30];
     let mut window = GliumWindow::new("Map Example", size, [20, 20]);
     let app = Rc::new(RefCell::new(MapApp {
-        map: TileMap::new(size, TileType::Floor),
+        map: TileMap::new(
+            Point {
+                x: size[0],
+                y: size[1],
+            },
+            TileType::Floor,
+        ),
         pos: [10, 10],
         tile_renderer: window.get_tile_renderer(),
     }));
