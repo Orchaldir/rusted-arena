@@ -4,6 +4,7 @@ pub mod window;
 
 use super::Renderer;
 use crate::math::color::Color;
+use crate::math::point::Point;
 use crate::rendering::colored::ColoredVertex;
 use crate::rendering::textured::TexturedVertex;
 use cgmath::ortho;
@@ -22,15 +23,14 @@ pub struct GliumRenderer {
 }
 
 impl GliumRenderer {
-    pub fn new(display: glium::Display, size: [u32; 2]) -> GliumRenderer {
+    pub fn new(display: glium::Display, size: Point) -> GliumRenderer {
         let colored_program = shader::load_program(&display, "colored.vertex", "colored.fragment");
         let textured_program =
             shader::load_program(&display, "textured.vertex", "textured.fragment");
 
         let texture = texture::load_texture(&display, "ascii.png").unwrap();
 
-        let matrix: cgmath::Matrix4<f32> =
-            ortho(0.0, size[0] as f32, 0.0, size[1] as f32, -1.0, 1.0);
+        let matrix: cgmath::Matrix4<f32> = ortho(0.0, size.x as f32, 0.0, size.y as f32, -1.0, 1.0);
 
         GliumRenderer {
             display,

@@ -39,35 +39,35 @@ impl TileMap {
     }
 
     fn render(&self, renderer: &mut TileRenderer) {
-        let mut y = 0;
-        let mut x = 0;
+        let mut pos = ZERO.clone();
 
         for tile in self.tiles.iter() {
             match tile {
                 TileType::Floor => {
-                    renderer.add_ascii([x, y], b'.', WHITE);
+                    renderer.add_ascii(pos, b'.', WHITE);
                 }
                 TileType::Wall => {
-                    renderer.add_ascii([x, y], b'#', WHITE);
+                    renderer.add_ascii(pos, b'#', WHITE);
                 }
             }
 
-            x += 1;
-            if x >= self.size.x {
-                x = 0;
-                y += 1;
+            pos.x += 1;
+
+            if pos.x >= self.size.x {
+                pos.x = 0;
+                pos.y += 1;
             }
         }
     }
 
-    fn can_move(&self, pos: [u32; 2]) -> bool {
-        self.tiles[get_index(pos[0], pos[1], self.size)] == TileType::Floor
+    fn can_move(&self, pos: Point) -> bool {
+        self.tiles[get_index(pos.x, pos.y, self.size)] == TileType::Floor
     }
 }
 
 pub struct MapApp {
     map: TileMap,
-    pos: [u32; 2],
+    pos: Point,
     tile_renderer: TileRenderer,
 }
 
@@ -82,7 +82,7 @@ impl App for MapApp {
         renderer.finish();
     }
 
-    fn on_button_released(&mut self, position: [u32; 2], button: MouseButton) {
+    fn on_button_released(&mut self, position: Point, button: MouseButton) {
         println!("Button '{:?}' released at {:?}", button, position);
         self.pos = position;
     }
@@ -101,16 +101,16 @@ impl App for MapApp {
 
 impl MapApp {
     fn try_move(&mut self, delta_x: i32, delta_y: i32) {
-        let pos = [
-            min(
-                max(self.pos[0] as i32 + delta_x, 0) as u32,
+        let pos = Point {
+            x: min(
+                max(self.pos.x as i32 + delta_x, 0) as u32,
                 self.map.size.x - 1,
             ),
-            min(
-                max(self.pos[1] as i32 + delta_y, 0) as u32,
+            y: min(
+                max(self.pos.y as i32 + delta_y, 0) as u32,
                 self.map.size.y - 1,
             ),
-        ];
+        };
 
         if self.map.can_move(pos) {
             self.pos = pos;
@@ -119,17 +119,14 @@ impl MapApp {
 }
 
 fn main() {
-    let size = [40, 30];
-    let mut window = GliumWindow::new("Map Example", size, [20, 20]);
+    let size = Point { x: 40, y: 30 };
+    let tile_size = Point { x: 20, y: 20 };
+
+    let mut window = GliumWindow::new("Map Example", size, tile_size);
+
     let app = Rc::new(RefCell::new(MapApp {
-        map: TileMap::new(
-            Point {
-                x: size[0],
-                y: size[1],
-            },
-            TileType::Floor,
-        ),
-        pos: [10, 10],
+        map: TileMap::new(size, TileType::Floor),
+        pos: Point { x: 10, y: 10 },
         tile_renderer: window.get_tile_renderer(),
     }));
 

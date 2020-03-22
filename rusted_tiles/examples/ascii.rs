@@ -1,6 +1,7 @@
 extern crate rusted_tiles;
 
 use rusted_tiles::math::color::*;
+use rusted_tiles::math::point::Point;
 use rusted_tiles::rendering::ascii::AsciiBuilder;
 use rusted_tiles::rendering::glium_impl::window::GliumWindow;
 use rusted_tiles::rendering::{App, MouseButton, Renderer, VirtualKeyCode, Window};
@@ -29,12 +30,12 @@ impl App for MapApp {
         renderer.finish();
     }
 
-    fn on_button_released(&mut self, _: [u32; 2], _: MouseButton) {}
+    fn on_button_released(&mut self, _: Point, _: MouseButton) {}
     fn on_key_released(&mut self, _: VirtualKeyCode) {}
 }
 
 fn main() {
-    let mut window = GliumWindow::new("Example with ascii", [80, 60], [10, 10]);
+    let mut window = GliumWindow::default_size("Example with ascii");
     let app = Rc::new(RefCell::new(MapApp::default()));
 
     window.run(app.clone());

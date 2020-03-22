@@ -6,6 +6,7 @@ pub mod textured;
 pub mod tile;
 
 use crate::math::color::Color;
+use crate::math::point::Point;
 pub use glium::glutin::event::{MouseButton, VirtualKeyCode};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -19,7 +20,7 @@ pub trait Renderer {
 
 pub trait App {
     fn render(&mut self, renderer: &mut dyn Renderer);
-    fn on_button_released(&mut self, position: [u32; 2], button: MouseButton);
+    fn on_button_released(&mut self, position: Point, button: MouseButton);
     fn on_key_released(&mut self, key: VirtualKeyCode);
 }
 

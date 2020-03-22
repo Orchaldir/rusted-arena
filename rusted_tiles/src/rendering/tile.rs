@@ -2,39 +2,44 @@ use super::ascii::AsciiBuilder;
 use super::colored::ColoredTriangleBuilder;
 use super::Renderer;
 use crate::math::color::*;
+use crate::math::point::Point;
 
 pub struct TileRenderer {
     ascii_builder: AsciiBuilder,
     colored_builder: ColoredTriangleBuilder,
-    start: [f32; 2],
-    tile_size: [f32; 2],
+    start: Point,
+    tile_size: Point,
+    tile_pixel: [f32; 2],
 }
 
 impl TileRenderer {
-    pub fn new(start: [f32; 2], tile_size: [f32; 2]) -> TileRenderer {
+    pub fn new(start: Point, tile_size: Point) -> TileRenderer {
+        let tile_pixel = [tile_size.x as f32, tile_size.y as f32];
+
         TileRenderer {
             ascii_builder: AsciiBuilder::default(),
             colored_builder: ColoredTriangleBuilder::default(),
             start,
             tile_size,
+            tile_pixel,
         }
     }
 
-    pub fn add_tile(&mut self, index: [u32; 2], color: Color) {
+    pub fn add_tile(&mut self, index: Point, color: Color) {
         let position = self.calculate_position(index);
 
         self.colored_builder
-            .add_tile(position, self.tile_size, color);
+            .add_tile(position, self.tile_pixel, color);
     }
 
-    pub fn add_polygon(&mut self, index: [u32; 2], corners: &[[f32; 2]], color: Color) {
+    pub fn add_polygon(&mut self, index: Point, corners: &[[f32; 2]], color: Color) {
         let pos = self.calculate_position(index);
         let polygon: Vec<[f32; 2]> = corners
             .iter()
             .map(|[x, y]| {
                 [
-                    pos[0] + x * self.tile_size[0],
-                    pos[1] + y * self.tile_size[1],
+                    pos[0] + x * self.tile_pixel[0],
+                    pos[1] + y * self.tile_pixel[1],
                 ]
             })
             .collect();
@@ -42,28 +47,28 @@ impl TileRenderer {
         self.colored_builder.add_polygon(&polygon, color);
     }
 
-    pub fn add_ascii(&mut self, index: [u32; 2], ascii: u8, color: Color) {
+    pub fn add_ascii(&mut self, index: Point, ascii: u8, color: Color) {
         let position = self.calculate_position(index);
 
         self.ascii_builder
-            .add_u8(position, self.tile_size, ascii, color);
+            .add_u8(position, self.tile_pixel, ascii, color);
     }
 
-    pub fn add_big_ascii(&mut self, index: [u32; 2], size: u32, ascii: u8, color: Color) {
+    pub fn add_big_ascii(&mut self, index: Point, size: u32, ascii: u8, color: Color) {
         let position = self.calculate_position(index);
         let tile_size = self.calculate_tile_size(size);
 
         self.ascii_builder.add_u8(position, tile_size, ascii, color);
     }
 
-    pub fn add_text(&mut self, index: [u32; 2], string: &str, color: Color) {
+    pub fn add_text(&mut self, index: Point, string: &str, color: Color) {
         let position = self.calculate_position(index);
 
         self.ascii_builder
-            .add_string(position, self.tile_size, string, color);
+            .add_string(position, self.tile_pixel, string, color);
     }
 
-    pub fn add_big_text(&mut self, index: [u32; 2], size: u32, string: &str, color: Color) {
+    pub fn add_big_text(&mut self, index: Point, size: u32, string: &str, color: Color) {
         let position = self.calculate_position(index);
         let tile_size = self.calculate_tile_size(size);
 
@@ -71,15 +76,14 @@ impl TileRenderer {
             .add_string(position, tile_size, string, color);
     }
 
-    fn calculate_position(&self, position: [u32; 2]) -> [f32; 2] {
-        let x = self.start[0] + position[0] as f32 * self.tile_size[0];
-        let y = self.start[1] + position[1] as f32 * self.tile_size[1];
-        [x, y]
+    fn calculate_position(&self, index: Point) -> [f32; 2] {
+        let pos = self.start + index * self.tile_size;
+        [pos.x as f32, pos.y as f32]
     }
 
     fn calculate_tile_size(&self, size: u32) -> [f32; 2] {
         let size = size as f32;
-        [self.tile_size[0] * size, self.tile_size[1] * size]
+        [self.tile_pixel[0] * size, self.tile_pixel[1] * size]
     }
 
     pub fn clear(&mut self) {
@@ -121,20 +125,26 @@ mod tests {
         b: 0.3,
     };
 
+    const INDEX0: Point = Point { x: 3, y: 4 };
+    const INDEX1: Point = Point { x: 5, y: 10 };
+    const INDEX2: Point = Point { x: 6, y: 0 };
+    const START: Point = Point { x: 100, y: 200 };
+    const TILE_SIZE: Point = Point { x: 10, y: 20 };
+
     #[test]
     fn test_add_tile() {
-        let mut renderer = TileRenderer::new([100.0, 200.0], [10.0, 20.0]);
+        let mut renderer = TileRenderer::new(START, TILE_SIZE);
 
-        renderer.add_tile([3, 4], COLOR);
+        renderer.add_tile(INDEX0, COLOR);
 
         assert_tile(renderer.get_colored(), POS, COLOR);
     }
 
     #[test]
     fn test_add_polygon() {
-        let mut renderer = TileRenderer::new([100.0, 200.0], [10.0, 20.0]);
+        let mut renderer = TileRenderer::new(START, TILE_SIZE);
 
-        renderer.add_polygon([3, 4], &[[0.0, 0.0], [1.0, 0.0], [0.5, 1.0]], COLOR);
+        renderer.add_polygon(INDEX0, &[[0.0, 0.0], [1.0, 0.0], [0.5, 1.0]], COLOR);
 
         let vertices = renderer.get_colored();
 
@@ -146,9 +156,9 @@ mod tests {
 
     #[test]
     fn test_add_ascii() {
-        let mut renderer = TileRenderer::new([100.0, 200.0], [10.0, 20.0]);
+        let mut renderer = TileRenderer::new(START, TILE_SIZE);
 
-        renderer.add_ascii([3, 4], b'A', COLOR);
+        renderer.add_ascii(INDEX0, b'A', COLOR);
 
         assert_textured_tile(renderer.get_textured(), POS, TC_A, COLOR);
     }
@@ -161,19 +171,19 @@ mod tests {
         let b11 = [170.0, 440.0];
         let big = [b00, b10, b01, b11];
 
-        let mut renderer = TileRenderer::new([100.0, 200.0], [10.0, 20.0]);
+        let mut renderer = TileRenderer::new(START, TILE_SIZE);
 
-        renderer.add_big_ascii([5, 10], 2, b'?', COLOR);
+        renderer.add_big_ascii(INDEX1, 2, b'?', COLOR);
 
         assert_textured_tile(renderer.get_textured(), big, TC_Q, COLOR);
     }
 
     #[test]
     fn test_clear() {
-        let mut renderer = TileRenderer::new([100.0, 200.0], [10.0, 20.0]);
+        let mut renderer = TileRenderer::new(START, TILE_SIZE);
 
-        renderer.add_tile([3, 4], COLOR);
-        renderer.add_ascii([6, 0], b'P', COLOR);
+        renderer.add_tile(INDEX0, COLOR);
+        renderer.add_ascii(INDEX2, b'P', COLOR);
         renderer.clear();
 
         assert!(renderer.get_colored().is_empty());
