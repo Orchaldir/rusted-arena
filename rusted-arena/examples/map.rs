@@ -22,22 +22,6 @@ pub struct TileMap {
 }
 
 impl TileMap {
-    fn new(size: Point, default: TileType) -> TileMap {
-        let mut tiles = vec![default; size.get_area()];
-
-        for x in 0..size.x {
-            tiles[get_index(x, 0, size)] = TileType::Wall;
-            tiles[get_index(x, size.y - 1, size)] = TileType::Wall;
-        }
-
-        for y in 0..size.y {
-            tiles[get_index(0, y, size)] = TileType::Wall;
-            tiles[get_index(size.x - 1, y, size)] = TileType::Wall;
-        }
-
-        TileMap { size, tiles }
-    }
-
     fn render(&self, renderer: &mut TileRenderer) {
         let mut pos = ZERO.clone();
 
@@ -62,6 +46,38 @@ impl TileMap {
 
     fn can_move(&self, pos: Point) -> bool {
         self.tiles[get_index(pos.x, pos.y, self.size)] == TileType::Floor
+    }
+}
+
+pub struct TileMapBuilder {
+    size: Point,
+    tiles: Vec<TileType>,
+}
+
+impl TileMapBuilder {
+    fn new(size: Point, default: TileType) -> Self {
+        let tiles = vec![default; size.get_area()];
+        TileMapBuilder { size, tiles }
+    }
+
+    fn add_border(mut self) -> Self {
+        for x in 0..self.size.x {
+            self.tiles[get_index(x, 0, self.size)] = TileType::Wall;
+            self.tiles[get_index(x, self.size.y - 1, self.size)] = TileType::Wall;
+        }
+
+        for y in 0..self.size.y {
+            self.tiles[get_index(0, y, self.size)] = TileType::Wall;
+            self.tiles[get_index(self.size.x - 1, y, self.size)] = TileType::Wall;
+        }
+        self
+    }
+
+    fn build(self) -> TileMap {
+        TileMap {
+            size: self.size,
+            tiles: self.tiles,
+        }
     }
 }
 
@@ -121,11 +137,14 @@ impl MapApp {
 fn main() {
     let size = Point { x: 40, y: 30 };
     let tile_size = Point { x: 20, y: 20 };
+    let tile_map = TileMapBuilder::new(size, TileType::Floor)
+        .add_border()
+        .build();
 
     let mut window = GliumWindow::new("Map Example", size, tile_size);
 
     let app = Rc::new(RefCell::new(MapApp {
-        map: TileMap::new(size, TileType::Floor),
+        map: tile_map,
         pos: Point { x: 10, y: 10 },
         tile_renderer: window.get_tile_renderer(),
     }));
