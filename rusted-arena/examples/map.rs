@@ -37,7 +37,7 @@ impl TileMap {
         TileMap { size, tiles }
     }
 
-    fn render(&mut self, renderer: &mut TileRenderer) {
+    fn render(&self, renderer: &mut TileRenderer) {
         let mut y = 0;
         let mut x = 0;
 
@@ -59,7 +59,7 @@ impl TileMap {
         }
     }
 
-    fn can_move(&mut self, pos: [u32; 2]) -> bool {
+    fn can_move(&self, pos: [u32; 2]) -> bool {
         self.tiles[get_index(pos, self.size)] == TileType::Floor
     }
 }
