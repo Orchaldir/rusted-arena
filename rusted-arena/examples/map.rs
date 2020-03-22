@@ -6,6 +6,7 @@ use rusted_tiles::rendering::glium_impl::window::GliumWindow;
 use rusted_tiles::rendering::tile::TileRenderer;
 use rusted_tiles::rendering::{App, MouseButton, Renderer, VirtualKeyCode, Window};
 use std::cell::RefCell;
+use std::cmp::{max, min};
 use std::rc::Rc;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -57,6 +58,10 @@ impl TileMap {
             }
         }
     }
+
+    fn can_move(&mut self, pos: [u32; 2]) -> bool {
+        self.tiles[get_index(pos, self.size)] == TileType::Floor
+    }
 }
 
 pub struct MapApp {
@@ -84,11 +89,30 @@ impl App for MapApp {
     fn on_key_released(&mut self, key: VirtualKeyCode) {
         println!("Key '{:?}' released", key);
         match key {
-            VirtualKeyCode::Down => self.pos[1] -= 1,
-            VirtualKeyCode::Left => self.pos[0] -= 1,
-            VirtualKeyCode::Right => self.pos[0] += 1,
-            VirtualKeyCode::Up => self.pos[1] += 1,
+            VirtualKeyCode::Down => self.try_move(0, -1),
+            VirtualKeyCode::Left => self.try_move(-1, 0),
+            VirtualKeyCode::Right => self.try_move(1, 0),
+            VirtualKeyCode::Up => self.try_move(0, 1),
             _ => (),
+        }
+    }
+}
+
+impl MapApp {
+    fn try_move(&mut self, delta_x: i32, delta_y: i32) {
+        let pos = [
+            min(
+                max(self.pos[0] as i32 + delta_x, 0) as u32,
+                self.map.size[0] - 1,
+            ),
+            min(
+                max(self.pos[1] as i32 + delta_y, 0) as u32,
+                self.map.size[1] - 1,
+            ),
+        ];
+
+        if self.map.can_move(pos) {
+            self.pos = pos;
         }
     }
 }
