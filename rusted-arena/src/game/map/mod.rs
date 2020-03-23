@@ -13,7 +13,7 @@ pub enum Direction {
     West,
 }
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum TileType {
     Floor,
     Wall,
@@ -60,7 +60,7 @@ impl TileMap {
         }
     }
 
-    fn get_with_offset(&self, pos: Point, delta_x: i32, delta_y: i32) -> Option<Point> {
+    pub fn get_with_offset(&self, pos: Point, delta_x: i32, delta_y: i32) -> Option<Point> {
         let x = pos.x as i32 + delta_x;
         let y = pos.y as i32 + delta_y;
 
