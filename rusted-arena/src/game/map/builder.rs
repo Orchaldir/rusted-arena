@@ -34,6 +34,11 @@ impl TileMapBuilder {
         self
     }
 
+    pub fn set_tile(mut self, pos: Point, tile_type: TileType) -> Self {
+        self.tiles[get_index(pos.x, pos.y, self.size)] = tile_type;
+        self
+    }
+
     pub fn build(self) -> TileMap {
         TileMap {
             size: self.size,

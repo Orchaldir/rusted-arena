@@ -69,6 +69,7 @@ fn main() {
             Point { x: 10, y: 10 },
             TileType::Wall,
         )
+        .set_tile(Point{ x: 20, y: 15 }, TileType::Floor)
         .build();
 
     let mut window = GliumWindow::new("Map Example", size, tile_size);
