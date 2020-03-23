@@ -5,6 +5,14 @@ use rusted_tiles::math::get_index;
 use rusted_tiles::math::point::*;
 use rusted_tiles::rendering::tile::TileRenderer;
 
+#[derive(PartialEq, Copy, Clone, Debug)]
+pub enum Direction {
+    North,
+    East,
+    South,
+    West,
+}
+
 #[derive(PartialEq, Copy, Clone)]
 pub enum TileType {
     Floor,
@@ -41,6 +49,29 @@ impl TileMap {
                 pos.y += 1;
             }
         }
+    }
+
+    pub fn get_neighbor(&self, pos: Point, dir: Direction) -> Option<Point> {
+        match dir {
+            Direction::North => self.get_with_offset(pos, 0, 1),
+            Direction::East => self.get_with_offset(pos, 1, 0),
+            Direction::South => self.get_with_offset(pos, 0, -1),
+            Direction::West => self.get_with_offset(pos, -1, 0),
+        }
+    }
+
+    fn get_with_offset(&self, pos: Point, delta_x: i32, delta_y: i32) -> Option<Point> {
+        let x = pos.x as i32 + delta_x;
+        let y = pos.y as i32 + delta_y;
+
+        if x < 0 || x >= self.size.x as i32 || y < 0 || y >= self.size.y as i32 {
+            return Option::None;
+        }
+
+        Option::Some(Point {
+            x: x as u32,
+            y: y as u32,
+        })
     }
 
     pub fn can_move(&self, pos: Point) -> bool {

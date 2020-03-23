@@ -9,7 +9,6 @@ use rusted_tiles::rendering::glium_impl::window::GliumWindow;
 use rusted_tiles::rendering::tile::TileRenderer;
 use rusted_tiles::rendering::{App, MouseButton, Renderer, VirtualKeyCode, Window};
 use std::cell::RefCell;
-use std::cmp::{max, min};
 use std::rc::Rc;
 
 pub struct MapApp {
@@ -37,26 +36,26 @@ impl App for MapApp {
     fn on_key_released(&mut self, key: VirtualKeyCode) {
         println!("Key '{:?}' released", key);
         match key {
-            VirtualKeyCode::Down => self.try_move(0, -1),
-            VirtualKeyCode::Left => self.try_move(-1, 0),
-            VirtualKeyCode::Right => self.try_move(1, 0),
-            VirtualKeyCode::Up => self.try_move(0, 1),
+            VirtualKeyCode::Down => self.try_move(Direction::South),
+            VirtualKeyCode::Left => self.try_move(Direction::West),
+            VirtualKeyCode::Right => self.try_move(Direction::East),
+            VirtualKeyCode::Up => self.try_move(Direction::North),
             _ => (),
         }
     }
 }
 
 impl MapApp {
-    fn try_move(&mut self, delta_x: i32, delta_y: i32) {
-        let size = self.map.get_size();
-        let pos = Point {
-            x: min(max(self.pos.x as i32 + delta_x, 0) as u32, size.x - 1),
-            y: min(max(self.pos.y as i32 + delta_y, 0) as u32, size.y - 1),
+    fn try_move(&mut self, dir: Direction) {
+        if let Some(pos) = self.map.get_neighbor(self.pos, dir) {
+            if self.map.can_move(pos) {
+                self.pos = pos;
+            } else {
+                println!("Moving {:?} is blocked by the map!", dir);
+            };
+        } else {
+            println!("Neighbor for {:?} is outside of the map!", dir);
         };
-
-        if self.map.can_move(pos) {
-            self.pos = pos;
-        }
     }
 }
 
