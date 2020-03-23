@@ -11,10 +11,11 @@ use rusted_tiles::rendering::{App, MouseButton, Renderer, VirtualKeyCode, Window
 use std::cell::RefCell;
 use std::rc::Rc;
 
-#[derive(PartialEq, Copy, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum BodyType {
     Simple(Point),
     Big(Point, u32),
+    Snake(Vec<Point>),
 }
 
 pub struct MapApp {
@@ -31,6 +32,12 @@ impl App for MapApp {
         match self.pos {
             BodyType::Simple(pos) => self.tile_renderer.add_ascii(pos, b'@', RED),
             BodyType::Big(pos, size) => self.tile_renderer.add_big_ascii(pos, size, b'@', RED),
+            BodyType::Snake(ref parts) => {
+                for i in (0..parts.len()).rev() {
+                    let color = if i == 0 { RED } else { WHITE };
+                    self.tile_renderer.add_ascii(parts[i], b'@', color);
+                }
+            }
         }
 
         renderer.start(BLACK);
@@ -120,6 +127,10 @@ impl MapApp {
 
                 entered_tiles
             }
+            BodyType::Snake(ref parts) => match self.map.get_neighbor(parts[0], dir) {
+                None => Vec::new(),
+                Some(entered) => vec![entered],
+            },
         }
     }
 
@@ -132,6 +143,12 @@ impl MapApp {
                 }
                 Some(neighbor) => self.pos = BodyType::Big(neighbor, size),
             },
+            BodyType::Snake(ref parts) => {
+                let mut new_parts = vec![entered_tiles[0]];
+                new_parts.extend_from_slice(parts);
+                new_parts.pop();
+                self.pos = BodyType::Snake(new_parts);
+            }
         }
 
         true
@@ -155,7 +172,8 @@ fn main() {
 
     let app = Rc::new(RefCell::new(MapApp {
         map: tile_map,
-        pos: BodyType::Big(Point { x: 10, y: 10 }, 3),
+        //pos: BodyType::Big(Point { x: 10, y: 10 }, 3),
+        pos: BodyType::Snake(vec![Point { x: 10, y: 10 }; 5]),
         tile_renderer: window.get_tile_renderer(),
     }));
 
