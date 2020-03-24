@@ -1,6 +1,7 @@
 extern crate rusted_arena;
 extern crate rusted_tiles;
 
+use rusted_arena::game::component::body::*;
 use rusted_arena::game::map::builder::TileMapBuilder;
 use rusted_arena::game::map::*;
 use rusted_tiles::math::color::*;
@@ -11,16 +12,9 @@ use rusted_tiles::rendering::{App, MouseButton, Renderer, VirtualKeyCode, Window
 use std::cell::RefCell;
 use std::rc::Rc;
 
-#[derive(PartialEq, Clone, Debug)]
-pub enum BodyType {
-    Simple(Point),
-    Big(Point, u32),
-    Snake(Vec<Point>),
-}
-
 pub struct MapApp {
     map: TileMap,
-    body: BodyType,
+    body: Body,
     tile_renderer: TileRenderer,
 }
 
@@ -29,16 +23,7 @@ impl App for MapApp {
         self.tile_renderer.clear();
         self.map.render(&mut self.tile_renderer);
 
-        match self.body {
-            BodyType::Simple(pos) => self.tile_renderer.add_ascii(pos, b'@', RED),
-            BodyType::Big(pos, size) => self.tile_renderer.add_big_ascii(pos, size, b'D', RED),
-            BodyType::Snake(ref parts) => {
-                for i in (0..parts.len()).rev() {
-                    let color = if i == 0 { RED } else { WHITE };
-                    self.tile_renderer.add_ascii(parts[i], b'S', color);
-                }
-            }
-        }
+        render_body(&mut self.tile_renderer, &self.body);
 
         renderer.start(BLACK);
         self.tile_renderer.render(renderer);
@@ -57,9 +42,9 @@ impl App for MapApp {
             VirtualKeyCode::Left => self.try_move(Direction::West),
             VirtualKeyCode::Right => self.try_move(Direction::East),
             VirtualKeyCode::Up => self.try_move(Direction::North),
-            VirtualKeyCode::Key1 => self.body = BodyType::Simple(self.get_pos()),
-            VirtualKeyCode::Key2 => self.body = BodyType::Big(self.get_pos(), 6),
-            VirtualKeyCode::Key3 => self.body = BodyType::Snake(vec![self.get_pos(); 20]),
+            VirtualKeyCode::Key1 => self.body = Body::Simple(get_position(&self.body)),
+            VirtualKeyCode::Key2 => self.body = Body::Big(get_position(&self.body), 6),
+            VirtualKeyCode::Key3 => self.body = Body::Snake(vec![get_position(&self.body); 20]),
             _ => (),
         }
     }
@@ -86,11 +71,11 @@ impl MapApp {
 
     fn get_entered_tiles(&mut self, dir: Direction) -> Vec<Point> {
         match self.body {
-            BodyType::Simple(pos) => match self.map.get_neighbor(pos, dir) {
+            Body::Simple(pos) => match self.map.get_neighbor(pos, dir) {
                 None => Vec::new(),
                 Some(entered) => vec![entered],
             },
-            BodyType::Big(pos, size) => {
+            Body::Big(pos, size) => {
                 let mut entered_tiles: Vec<Point> = Vec::new();
 
                 match dir {
@@ -130,7 +115,7 @@ impl MapApp {
 
                 entered_tiles
             }
-            BodyType::Snake(ref parts) => match self.map.get_neighbor(parts[0], dir) {
+            Body::Snake(ref parts) => match self.map.get_neighbor(parts[0], dir) {
                 None => Vec::new(),
                 Some(entered) => vec![entered],
             },
@@ -139,30 +124,22 @@ impl MapApp {
 
     fn update_pos(&mut self, entered_tiles: Vec<Point>, dir: Direction) -> bool {
         match self.body {
-            BodyType::Simple(_) => self.body = BodyType::Simple(entered_tiles[0]),
-            BodyType::Big(pos, size) => match self.map.get_neighbor(pos, dir) {
+            Body::Simple(_) => self.body = Body::Simple(entered_tiles[0]),
+            Body::Big(pos, size) => match self.map.get_neighbor(pos, dir) {
                 None => {
                     return false;
                 }
-                Some(neighbor) => self.body = BodyType::Big(neighbor, size),
+                Some(neighbor) => self.body = Body::Big(neighbor, size),
             },
-            BodyType::Snake(ref parts) => {
+            Body::Snake(ref parts) => {
                 let mut new_parts = vec![entered_tiles[0]];
                 new_parts.extend_from_slice(parts);
                 new_parts.pop();
-                self.body = BodyType::Snake(new_parts);
+                self.body = Body::Snake(new_parts);
             }
         }
 
         true
-    }
-
-    fn get_pos(&self) -> Point {
-        match self.body {
-            BodyType::Simple(pos) => pos,
-            BodyType::Big(pos, _) => pos,
-            BodyType::Snake(ref parts) => parts[0],
-        }
     }
 }
 
@@ -183,7 +160,7 @@ fn main() {
 
     let app = Rc::new(RefCell::new(MapApp {
         map: tile_map,
-        body: BodyType::Simple(Point { x: 10, y: 10 }),
+        body: Body::Simple(Point { x: 10, y: 10 }),
         tile_renderer: window.get_tile_renderer(),
     }));
 
