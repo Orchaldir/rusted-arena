@@ -6,6 +6,10 @@ pub struct Point {
     pub y: u32,
 }
 
+pub fn xy(x: u32, y: u32) -> Point {
+    Point { x, y }
+}
+
 pub const ZERO: Point = Point { x: 0, y: 0 };
 
 impl Point {

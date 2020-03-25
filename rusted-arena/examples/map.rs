@@ -52,94 +52,40 @@ impl App for MapApp {
 
 impl MapApp {
     fn try_move(&mut self, dir: Direction) {
-        let entered_tiles = self.get_entered_tiles(dir);
-
-        if entered_tiles.is_empty() {
-            println!("Neighbor for {:?} is outside of the map!", dir);
-            return;
-        }
-
-        for entered in &entered_tiles {
-            if !self.map.can_move(*entered) {
-                println!("Moving {:?} is blocked by the map!", dir);
-                return;
-            };
-        }
-
-        self.update_pos(entered_tiles, dir);
-    }
-
-    fn get_entered_tiles(&mut self, dir: Direction) -> Vec<Point> {
-        match self.body {
-            Body::Simple(pos) => match self.map.get_neighbor(pos, dir) {
-                None => Vec::new(),
-                Some(entered) => vec![entered],
-            },
-            Body::Big(pos, size) => {
-                let mut entered_tiles: Vec<Point> = Vec::new();
-
-                match dir {
-                    Direction::North => {
-                        for i in 0..size {
-                            match self.map.get_with_offset(pos, i as i32, size as i32) {
-                                None => return Vec::new(),
-                                Some(tile) => entered_tiles.push(tile),
-                            }
-                        }
-                    }
-                    Direction::East => {
-                        for i in 0..size {
-                            match self.map.get_with_offset(pos, size as i32, i as i32) {
-                                None => return Vec::new(),
-                                Some(tile) => entered_tiles.push(tile),
-                            }
-                        }
-                    }
-                    Direction::South => {
-                        for i in 0..size {
-                            match self.map.get_with_offset(pos, i as i32, -1) {
-                                None => return Vec::new(),
-                                Some(tile) => entered_tiles.push(tile),
-                            }
-                        }
-                    }
-                    Direction::West => {
-                        for i in 0..size {
-                            match self.map.get_with_offset(pos, -1, i as i32) {
-                                None => return Vec::new(),
-                                Some(tile) => entered_tiles.push(tile),
-                            }
-                        }
-                    }
-                }
-
-                entered_tiles
-            }
-            Body::Snake(ref parts) => match self.map.get_neighbor(parts[0], dir) {
-                None => Vec::new(),
-                Some(entered) => vec![entered],
-            },
+        match self.get_new_position(dir, 0) {
+            None => println!("Neighbor for {:?} is outside of the map!", dir),
+            Some(new_pos) => self.body = self.update_pos(new_pos),
         }
     }
 
-    fn update_pos(&mut self, entered_tiles: Vec<Point>, dir: Direction) -> bool {
+    fn get_new_position(&self, dir: Direction, entity: u32) -> Option<Point> {
         match self.body {
-            Body::Simple(_) => self.body = Body::Simple(entered_tiles[0]),
-            Body::Big(pos, size) => match self.map.get_neighbor(pos, dir) {
-                None => {
-                    return false;
-                }
-                Some(neighbor) => self.body = Body::Big(neighbor, size),
-            },
+            Body::Simple(pos) => self
+                .map
+                .get_neighbor(pos, dir)
+                .filter(|pos| self.map.is_free(*pos, entity)),
+            Body::Big(pos, size) => self
+                .map
+                .get_neighbor(pos, dir)
+                .filter(|pos| self.map.is_square_free(*pos, size, entity)),
+            Body::Snake(ref parts) => self
+                .map
+                .get_neighbor(parts[0], dir)
+                .filter(|pos| self.map.is_free(*pos, entity)),
+        }
+    }
+
+    fn update_pos(&self, pos: Point) -> Body {
+        match self.body {
+            Body::Simple(_) => Body::Simple(pos),
+            Body::Big(_, size) => Body::Big(pos, size),
             Body::Snake(ref parts) => {
-                let mut new_parts = vec![entered_tiles[0]];
+                let mut new_parts = vec![pos];
                 new_parts.extend_from_slice(parts);
                 new_parts.pop();
-                self.body = Body::Snake(new_parts);
+                Body::Snake(new_parts)
             }
         }
-
-        true
     }
 }
 
