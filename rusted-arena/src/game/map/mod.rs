@@ -1,8 +1,8 @@
 pub mod builder;
 
 use rusted_tiles::math::color::*;
-use rusted_tiles::math::get_index;
 use rusted_tiles::math::point::*;
+use rusted_tiles::math::{get_index, get_point};
 use rusted_tiles::rendering::tile::TileRenderer;
 use std::collections::HashMap;
 
@@ -62,16 +62,17 @@ impl TileMap {
         }
     }
 
-    pub fn get_neighbor(&self, pos: Point, dir: Direction) -> Option<Point> {
+    pub fn get_neighbor(&self, index: usize, dir: Direction) -> Option<usize> {
         match dir {
-            Direction::North => self.get_with_offset(pos, 0, 1),
-            Direction::East => self.get_with_offset(pos, 1, 0),
-            Direction::South => self.get_with_offset(pos, 0, -1),
-            Direction::West => self.get_with_offset(pos, -1, 0),
+            Direction::North => self.get_with_offset(index, 0, 1),
+            Direction::East => self.get_with_offset(index, 1, 0),
+            Direction::South => self.get_with_offset(index, 0, -1),
+            Direction::West => self.get_with_offset(index, -1, 0),
         }
     }
 
-    pub fn get_with_offset(&self, pos: Point, delta_x: i32, delta_y: i32) -> Option<Point> {
+    pub fn get_with_offset(&self, index: usize, delta_x: i32, delta_y: i32) -> Option<usize> {
+        let pos = get_point(index, self.size);
         let x = pos.x as i32 + delta_x;
         let y = pos.y as i32 + delta_y;
 
@@ -79,14 +80,15 @@ impl TileMap {
             return Option::None;
         }
 
-        Option::Some(Point {
-            x: x as u32,
-            y: y as u32,
-        })
+        Option::Some(get_index(x as u32, y as u32, self.size))
     }
 
-    pub fn is_free(&self, pos: Point, entity: u32) -> bool {
-        let index = get_index(pos.x, pos.y, self.size);
+    pub fn is_free(&self, index: usize, entity: u32) -> bool {
+        assert!(
+            index < self.tiles.len(),
+            "Index {} is outside the map!",
+            index
+        );
 
         if !self.tiles[index].is_walkable() {
             return false;
@@ -99,14 +101,25 @@ impl TileMap {
         }
     }
 
-    pub fn is_square_free(&self, pos: Point, size: u32, entity: u32) -> bool {
+    pub fn is_square_free(&self, index: usize, size: u32, entity: u32) -> bool {
+        assert!(
+            index < self.tiles.len(),
+            "Index {} is outside the map!",
+            index
+        );
+        let pos = get_point(index, self.size);
+
+        if pos.x > self.size.x - size || pos.y > self.size.y - size {
+            return false;
+        }
+
         for dx in 0..size {
             let x = pos.x + dx;
 
             for dy in 0..size {
                 let y = pos.y + dy;
 
-                if !self.is_free(xy(x, y), entity) {
+                if !self.is_free(get_index(x, y, self.size), entity) {
                     return false;
                 }
             }
@@ -121,9 +134,15 @@ mod tests {
     use super::*;
     use crate::game::map::builder::TileMapBuilder;
     use crate::game::map::TileType::*;
-    use rusted_tiles::math::get_point;
 
     const SIZE: Point = Point { x: 4, y: 3 };
+
+    const FREE_RESULTS: [bool; 12] = [
+        true, true, true, false, true, true, true, false, false, false, false, false,
+    ];
+    const BLOCKED_RESULTS: [bool; 12] = [
+        false, false, true, false, false, false, true, false, false, false, false, false,
+    ];
 
     #[test]
     fn test_is_walkable() {
@@ -138,7 +157,7 @@ mod tests {
             .build();
 
         for i in 0..12 {
-            assert_eq!(map.is_free(get_point(i, SIZE), 0), i != 0);
+            assert_eq!(map.is_free(i, 0), i != 0);
         }
     }
 
@@ -150,8 +169,58 @@ mod tests {
             occupying_entities: vec![(0usize, 0u32)].into_iter().collect(),
         };
 
-        assert_eq!(map.is_free(xy(0, 0), 0), true);
-        assert_eq!(map.is_free(xy(0, 0), 1), false);
-        assert_eq!(map.is_free(xy(0, 0), 2), false);
+        assert_eq!(map.is_free(0, 0), true);
+        assert_eq!(map.is_free(0, 1), false);
+        assert_eq!(map.is_free(0, 2), false);
+    }
+
+    #[test]
+    #[should_panic(expected = "Index 12 is outside the map!")]
+    fn test_is_free_outside() {
+        let map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.is_free(12, 0);
+    }
+
+    #[test]
+    fn test_is_square_free() {
+        let map = TileMapBuilder::new(SIZE, Floor).build();
+
+        assert_is_square_free(&map, 0, FREE_RESULTS);
+    }
+
+    #[test]
+    fn test_is_square_free_with_wall() {
+        let map = TileMapBuilder::new(SIZE, Floor)
+            .set_tile(xy(1, 1), Wall)
+            .build();
+
+        assert_is_square_free(&map, 0, BLOCKED_RESULTS);
+    }
+
+    #[test]
+    fn test_is_square_free_with_occupied_map() {
+        let map = TileMap {
+            size: xy(4, 3),
+            tiles: vec![Floor; 12],
+            occupying_entities: vec![(5usize, 0u32)].into_iter().collect(),
+        };
+
+        assert_is_square_free(&map, 0, FREE_RESULTS);
+        assert_is_square_free(&map, 1, BLOCKED_RESULTS);
+    }
+
+    #[test]
+    #[should_panic(expected = "Index 12 is outside the map!")]
+    fn test_is_square_free_outside() {
+        let map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.is_square_free(12, 2, 0);
+    }
+
+    fn assert_is_square_free(map: &TileMap, entity: u32, results: [bool; 12]) -> () {
+        for (i, result) in results.iter().enumerate() {
+            assert_eq!(map.is_square_free(i, 2, entity), *result);
+        }
     }
 }

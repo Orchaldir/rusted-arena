@@ -5,6 +5,7 @@ use rusted_arena::game::component::body::*;
 use rusted_arena::game::map::builder::TileMapBuilder;
 use rusted_arena::game::map::*;
 use rusted_tiles::math::color::*;
+use rusted_tiles::math::get_index;
 use rusted_tiles::math::point::*;
 use rusted_tiles::rendering::glium_impl::window::GliumWindow;
 use rusted_tiles::rendering::tile::TileRenderer;
@@ -23,7 +24,7 @@ impl App for MapApp {
         self.tile_renderer.clear();
         self.map.render(&mut self.tile_renderer);
 
-        render_body(&mut self.tile_renderer, &self.body);
+        render_body(&mut self.tile_renderer, self.map.get_size(), &self.body);
 
         renderer.start(BLACK);
         self.tile_renderer.render(renderer);
@@ -32,7 +33,7 @@ impl App for MapApp {
 
     fn on_button_released(&mut self, position: Point, button: MouseButton) {
         println!("Button '{:?}' released at {:?}", button, position);
-        //self.pos = position;
+        self.body = self.update_pos(get_index(position.x, position.y, self.map.get_size()));
     }
 
     fn on_key_released(&mut self, key: VirtualKeyCode) {
@@ -54,34 +55,34 @@ impl MapApp {
     fn try_move(&mut self, dir: Direction) {
         match self.get_new_position(dir, 0) {
             None => println!("Neighbor for {:?} is outside of the map!", dir),
-            Some(new_pos) => self.body = self.update_pos(new_pos),
+            Some(index) => self.body = self.update_pos(index),
         }
     }
 
-    fn get_new_position(&self, dir: Direction, entity: u32) -> Option<Point> {
+    fn get_new_position(&self, dir: Direction, entity: u32) -> Option<usize> {
         match self.body {
-            Body::Simple(pos) => self
+            Body::Simple(index) => self
                 .map
-                .get_neighbor(pos, dir)
-                .filter(|pos| self.map.is_free(*pos, entity)),
-            Body::Big(pos, size) => self
+                .get_neighbor(index, dir)
+                .filter(|i| self.map.is_free(*i, entity)),
+            Body::Big(index, size) => self
                 .map
-                .get_neighbor(pos, dir)
-                .filter(|pos| self.map.is_square_free(*pos, size, entity)),
-            Body::Snake(ref parts) => self
+                .get_neighbor(index, dir)
+                .filter(|i| self.map.is_square_free(*i, size, entity)),
+            Body::Snake(ref indices) => self
                 .map
-                .get_neighbor(parts[0], dir)
-                .filter(|pos| self.map.is_free(*pos, entity)),
+                .get_neighbor(indices[0], dir)
+                .filter(|i| self.map.is_free(*i, entity)),
         }
     }
 
-    fn update_pos(&self, pos: Point) -> Body {
+    fn update_pos(&self, index: usize) -> Body {
         match self.body {
-            Body::Simple(_) => Body::Simple(pos),
-            Body::Big(_, size) => Body::Big(pos, size),
-            Body::Snake(ref parts) => {
-                let mut new_parts = vec![pos];
-                new_parts.extend_from_slice(parts);
+            Body::Simple(_) => Body::Simple(index),
+            Body::Big(_, size) => Body::Big(index, size),
+            Body::Snake(ref indices) => {
+                let mut new_parts = vec![index];
+                new_parts.extend_from_slice(indices);
                 new_parts.pop();
                 Body::Snake(new_parts)
             }
@@ -106,7 +107,7 @@ fn main() {
 
     let app = Rc::new(RefCell::new(MapApp {
         map: tile_map,
-        body: Body::Simple(Point { x: 10, y: 10 }),
+        body: Body::Simple(410),
         tile_renderer: window.get_tile_renderer(),
     }));
 
