@@ -28,8 +28,9 @@ pub fn update_entity_on_map(map: &mut TileMap, body: &Body, index: usize, entity
         Body::Snake(indices) => {
             let length = indices.len();
             let last_index = indices[length - 1];
+            let count = indices.iter().filter(|&i| *i == last_index).count();
 
-            if last_index != indices[length - 2] {
+            if count == 1 {
                 map.remove_entity(last_index, entity);
             }
 

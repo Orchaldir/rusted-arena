@@ -143,8 +143,7 @@ impl TileMap {
         self.assert_inside(index);
 
         match self.entities.insert(index, entity) {
-            Some(other) if other == entity => panic!("Entity {} is already at {}!", entity, index),
-            Some(other) => panic!(
+            Some(other) if other != entity => panic!(
                 "Adding entity {} blocked by {} at {}!",
                 entity, other, index
             ),
@@ -225,7 +224,7 @@ mod tests {
         let map = TileMap {
             size: xy(1, 1),
             tiles: vec![Floor],
-            entities: vec![(0usize, 0u32)].into_iter().collect(),
+            entities: vec![(0usize, 0usize)].into_iter().collect(),
         };
 
         assert_eq!(map.is_free(0, 0), true);
@@ -262,7 +261,7 @@ mod tests {
         let map = TileMap {
             size: xy(4, 3),
             tiles: vec![Floor; 12],
-            entities: vec![(5usize, 0u32)].into_iter().collect(),
+            entities: vec![(5usize, 0usize)].into_iter().collect(),
         };
 
         assert_is_square_free(&map, 0, FREE_RESULTS);
@@ -310,12 +309,14 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Entity 42 is already at 2!")]
     fn test_add_entity_twice() {
         let mut map = TileMapBuilder::new(SIZE, Floor).build();
 
         map.add_entity(2, 42);
         map.add_entity(2, 42);
+
+        assert_eq!(map.get_entity(0), None);
+        assert_eq!(map.get_entity(2), Some(&42));
     }
 
     #[test]

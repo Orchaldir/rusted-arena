@@ -74,7 +74,7 @@ impl MapApp {
         let body = &self.bodies[self.current_body];
 
         match self.get_new_position(body, dir, self.current_body) {
-            None => println!("Neighbor for {:?} is outside of the map!", dir),
+            None => println!("Neighbor for {:?} is blocked!", dir),
             Some(index) => {
                 update_entity_on_map(&mut self.map, body, index, self.current_body);
                 self.bodies[self.current_body] = update_position(body, index);
