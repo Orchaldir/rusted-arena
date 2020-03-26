@@ -16,7 +16,8 @@ use std::rc::Rc;
 
 pub struct MapApp {
     map: TileMap,
-    body: Body,
+    bodies: Vec<Body>,
+    current_body: usize,
     tile_renderer: TileRenderer,
 }
 
@@ -25,7 +26,9 @@ impl App for MapApp {
         self.tile_renderer.clear();
         self.map.render(&mut self.tile_renderer);
 
-        render_body(&mut self.tile_renderer, self.map.get_size(), &self.body);
+        for body in &self.bodies {
+            render_body(&mut self.tile_renderer, self.map.get_size(), body);
+        }
 
         renderer.start(BLACK);
         self.tile_renderer.render(renderer);
@@ -34,8 +37,6 @@ impl App for MapApp {
 
     fn on_button_released(&mut self, position: Point, button: MouseButton) {
         println!("Button '{:?}' released at {:?}", button, position);
-        let index = get_index(position.x, position.y, self.map.get_size());
-        self.body = update_position(&self.body, index);
     }
 
     fn on_key_released(&mut self, key: VirtualKeyCode) {
@@ -45,40 +46,52 @@ impl App for MapApp {
             VirtualKeyCode::Left => self.try_move(Direction::West),
             VirtualKeyCode::Right => self.try_move(Direction::East),
             VirtualKeyCode::Up => self.try_move(Direction::North),
+            VirtualKeyCode::Key1 => self.current_body = 0,
+            VirtualKeyCode::Key2 => self.current_body = 1,
+            VirtualKeyCode::Key3 => self.current_body = 2,
             _ => (),
         }
     }
 }
 
 impl MapApp {
-    pub fn new(mut map: TileMap, body: Body, tile_renderer: TileRenderer) -> MapApp {
-        add_entity_to_map(&mut map, &body, 0);
+    pub fn new(map: TileMap, tile_renderer: TileRenderer) -> MapApp {
         MapApp {
             map,
-            body,
+            bodies: Vec::new(),
+            current_body: 0,
             tile_renderer,
         }
     }
+
+    pub fn add_body(&mut self, body: Body) {
+        let entity = self.bodies.len();
+        add_entity_to_map(&mut self.map, &body, entity);
+        self.bodies.push(body);
+    }
+
     fn try_move(&mut self, dir: Direction) {
-        match self.get_new_position(dir, 0) {
+        let body = &self.bodies[self.current_body];
+
+        match self.get_new_position(body, dir, self.current_body) {
             None => println!("Neighbor for {:?} is outside of the map!", dir),
             Some(index) => {
-                update_entity_on_map(&mut self.map, &self.body, index, 0);
-                self.body = update_position(&self.body, index);
+                update_entity_on_map(&mut self.map, body, index, self.current_body);
+                self.bodies[self.current_body] = update_position(body, index);
             }
         }
     }
 
-    fn get_new_position(&self, dir: Direction, entity: u32) -> Option<usize> {
-        match self.body {
+    fn get_new_position(&self, body: &Body, dir: Direction, entity: usize) -> Option<usize> {
+        match body {
             Body::Simple(index) => self
                 .map
-                .get_neighbor(index, dir)
+                .get_neighbor(*index, dir)
                 .filter(|i| self.map.is_free(*i, entity)),
             Body::Big(index, size) => self
                 .map
-                .get_neighbor(index, dir)
-                .filter(|i| self.map.is_square_free(*i, size, entity)),
+                .get_neighbor(*index, dir)
+                .filter(|i| self.map.is_square_free(*i, *size, entity)),
             Body::Snake(ref indices) => self
                 .map
                 .get_neighbor(indices[0], dir)
@@ -104,9 +117,15 @@ fn main() {
 
     let app = Rc::new(RefCell::new(MapApp::new(
         tile_map,
-        Body::Simple(410),
         window.get_tile_renderer(),
     )));
+
+    app.borrow_mut()
+        .add_body(Body::Simple(get_index(10, 10, size)));
+    app.borrow_mut()
+        .add_body(Body::Big(get_index(10, 20, size), 5));
+    app.borrow_mut()
+        .add_body(Body::Snake(vec![get_index(35, 5, size); 25]));
 
     window.run(app.clone());
 }

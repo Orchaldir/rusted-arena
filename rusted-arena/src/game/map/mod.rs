@@ -32,7 +32,7 @@ impl TileType {
 pub struct TileMap {
     size: Point,
     tiles: Vec<TileType>,
-    entities: HashMap<usize, u32>,
+    entities: HashMap<usize, usize>,
 }
 
 impl TileMap {
@@ -91,7 +91,7 @@ impl TileMap {
         Option::Some(get_index(x as u32, y as u32, self.size))
     }
 
-    pub fn is_free(&self, index: usize, entity: u32) -> bool {
+    pub fn is_free(&self, index: usize, entity: usize) -> bool {
         self.assert_inside(index);
 
         if !self.tiles[index].is_walkable() {
@@ -105,19 +105,19 @@ impl TileMap {
         }
     }
 
-    pub fn is_square_free(&self, index: usize, size: u32, entity: u32) -> bool {
+    pub fn is_square_free(&self, index: usize, size: u32, entity: usize) -> bool {
         self.assert_inside(index);
         execute_function_on_square(self.size, index, size, |i: usize| self.is_free(i, entity))
     }
 
     // occupying entities
 
-    pub fn get_entity(&mut self, index: usize) -> Option<&u32> {
+    pub fn get_entity(&mut self, index: usize) -> Option<&usize> {
         self.assert_inside(index);
         self.entities.get(&index)
     }
 
-    pub fn remove_entity(&mut self, index: usize, entity: u32) -> bool {
+    pub fn remove_entity(&mut self, index: usize, entity: usize) -> bool {
         self.assert_inside(index);
 
         match self.entities.remove(&index) {
@@ -132,14 +132,14 @@ impl TileMap {
         true
     }
 
-    pub fn remove_entity_from_square(&mut self, index: usize, size: u32, entity: u32) -> bool {
+    pub fn remove_entity_from_square(&mut self, index: usize, size: u32, entity: usize) -> bool {
         self.assert_inside(index);
         execute_function_on_square(self.size, index, size, |i: usize| {
             self.remove_entity(i, entity)
         })
     }
 
-    pub fn add_entity(&mut self, index: usize, entity: u32) -> bool {
+    pub fn add_entity(&mut self, index: usize, entity: usize) -> bool {
         self.assert_inside(index);
 
         match self.entities.insert(index, entity) {
@@ -154,7 +154,7 @@ impl TileMap {
         true
     }
 
-    pub fn add_entity_to_square(&mut self, index: usize, size: u32, entity: u32) -> bool {
+    pub fn add_entity_to_square(&mut self, index: usize, size: u32, entity: usize) -> bool {
         self.assert_inside(index);
         execute_function_on_square(self.size, index, size, |i: usize| {
             self.add_entity(i, entity)
@@ -277,7 +277,7 @@ mod tests {
         map.is_square_free(OUTSIDE, 2, 0);
     }
 
-    fn assert_is_square_free(map: &TileMap, entity: u32, results: [bool; 12]) -> () {
+    fn assert_is_square_free(map: &TileMap, entity: usize, results: [bool; 12]) -> () {
         for (i, result) in results.iter().enumerate() {
             assert_eq!(map.is_square_free(i, 2, entity), *result);
         }
