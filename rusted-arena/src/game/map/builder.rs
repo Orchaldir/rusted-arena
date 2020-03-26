@@ -43,7 +43,7 @@ impl TileMapBuilder {
         TileMap {
             size: self.size,
             tiles: self.tiles,
-            occupying_entities: HashMap::new(),
+            entities: HashMap::new(),
         }
     }
 }

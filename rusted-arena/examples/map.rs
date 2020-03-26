@@ -33,10 +33,8 @@ impl App for MapApp {
 
     fn on_button_released(&mut self, position: Point, button: MouseButton) {
         println!("Button '{:?}' released at {:?}", button, position);
-        self.body = update_position(
-            &self.body,
-            get_index(position.x, position.y, self.map.get_size()),
-        );
+        let index = get_index(position.x, position.y, self.map.get_size());
+        self.body = update_position(&self.body, index);
     }
 
     fn on_key_released(&mut self, key: VirtualKeyCode) {

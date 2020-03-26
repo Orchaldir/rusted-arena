@@ -32,12 +32,20 @@ impl TileType {
 pub struct TileMap {
     size: Point,
     tiles: Vec<TileType>,
-    occupying_entities: HashMap<usize, u32>,
+    entities: HashMap<usize, u32>,
 }
 
 impl TileMap {
     pub fn get_size(&self) -> Point {
         self.size
+    }
+
+    fn assert_inside(&self, index: usize) {
+        assert!(
+            index < self.tiles.len(),
+            "Index {} is outside the map!",
+            index
+        );
     }
 
     pub fn render(&self, renderer: &mut TileRenderer) {
@@ -84,17 +92,13 @@ impl TileMap {
     }
 
     pub fn is_free(&self, index: usize, entity: u32) -> bool {
-        assert!(
-            index < self.tiles.len(),
-            "Index {} is outside the map!",
-            index
-        );
+        self.assert_inside(index);
 
         if !self.tiles[index].is_walkable() {
             return false;
         }
 
-        match self.occupying_entities.get(&index) {
+        match self.entities.get(&index) {
             None => true,
             Some(e) if *e == entity => true,
             Some(_) => false,
@@ -102,11 +106,7 @@ impl TileMap {
     }
 
     pub fn is_square_free(&self, index: usize, size: u32, entity: u32) -> bool {
-        assert!(
-            index < self.tiles.len(),
-            "Index {} is outside the map!",
-            index
-        );
+        self.assert_inside(index);
         let pos = get_point(index, self.size);
 
         if pos.x > self.size.x - size || pos.y > self.size.y - size {
@@ -127,6 +127,39 @@ impl TileMap {
 
         true
     }
+
+    // occupying entities
+
+    pub fn get_entity(&mut self, index: usize) -> Option<&u32> {
+        self.assert_inside(index);
+        self.entities.get(&index)
+    }
+
+    pub fn remove_entity(&mut self, index: usize, entity: u32) {
+        self.assert_inside(index);
+
+        match self.entities.remove(&index) {
+            None => panic!("Could not remove entity {} at {}!", entity, index),
+            Some(other) if other != entity => panic!(
+                "Removed entity {} instead of {} at {}!",
+                other, entity, index
+            ),
+            _ => {}
+        }
+    }
+
+    pub fn set_entity(&mut self, index: usize, entity: u32) {
+        self.assert_inside(index);
+
+        match self.entities.insert(index, entity) {
+            Some(other) if other == entity => panic!("Entity {} is already at {}!", entity, index),
+            Some(other) => panic!(
+                "Setting entity {} blocked by {} at {}!",
+                entity, other, index
+            ),
+            _ => {}
+        }
+    }
 }
 
 #[cfg(test)]
@@ -135,6 +168,7 @@ mod tests {
     use crate::game::map::builder::TileMapBuilder;
     use crate::game::map::TileType::*;
 
+    const OUTSIDE: usize = 12;
     const SIZE: Point = Point { x: 4, y: 3 };
 
     const FREE_RESULTS: [bool; 12] = [
@@ -166,7 +200,7 @@ mod tests {
         let map = TileMap {
             size: xy(1, 1),
             tiles: vec![Floor],
-            occupying_entities: vec![(0usize, 0u32)].into_iter().collect(),
+            entities: vec![(0usize, 0u32)].into_iter().collect(),
         };
 
         assert_eq!(map.is_free(0, 0), true);
@@ -179,7 +213,7 @@ mod tests {
     fn test_is_free_outside() {
         let map = TileMapBuilder::new(SIZE, Floor).build();
 
-        map.is_free(12, 0);
+        map.is_free(OUTSIDE, 0);
     }
 
     #[test]
@@ -203,7 +237,7 @@ mod tests {
         let map = TileMap {
             size: xy(4, 3),
             tiles: vec![Floor; 12],
-            occupying_entities: vec![(5usize, 0u32)].into_iter().collect(),
+            entities: vec![(5usize, 0u32)].into_iter().collect(),
         };
 
         assert_is_square_free(&map, 0, FREE_RESULTS);
@@ -215,12 +249,84 @@ mod tests {
     fn test_is_square_free_outside() {
         let map = TileMapBuilder::new(SIZE, Floor).build();
 
-        map.is_square_free(12, 2, 0);
+        map.is_square_free(OUTSIDE, 2, 0);
     }
 
     fn assert_is_square_free(map: &TileMap, entity: u32, results: [bool; 12]) -> () {
         for (i, result) in results.iter().enumerate() {
             assert_eq!(map.is_square_free(i, 2, entity), *result);
         }
+    }
+
+    #[test]
+    #[should_panic(expected = "Index 12 is outside the map!")]
+    fn test_get_entity_outside() {
+        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.get_entity(OUTSIDE);
+    }
+
+    #[test]
+    fn test_set_entity() {
+        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.set_entity(5, 42);
+
+        assert_eq!(map.get_entity(0), None);
+        assert_eq!(map.get_entity(5), Some(&42));
+    }
+
+    #[test]
+    #[should_panic(expected = "Index 12 is outside the map!")]
+    fn test_set_entity_outside() {
+        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.set_entity(OUTSIDE, 42);
+    }
+
+    #[test]
+    #[should_panic(expected = "Entity 42 is already at 2!")]
+    fn test_set_entity_twice() {
+        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.set_entity(2, 42);
+        map.set_entity(2, 42);
+    }
+
+    #[test]
+    #[should_panic(expected = "Setting entity 2 blocked by 1 at 5!")]
+    fn test_set_entity_different() {
+        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.set_entity(5, 1);
+        map.set_entity(5, 2);
+    }
+
+    #[test]
+    fn test_remove_entity() {
+        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.set_entity(5, 10);
+        map.remove_entity(5, 10);
+        map.set_entity(5, 20);
+
+        assert_eq!(map.get_entity(5), Some(&20));
+    }
+
+    #[test]
+    #[should_panic(expected = "Could not remove entity 10 at 5!")]
+    fn test_remove_entity_not_there() {
+        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.remove_entity(5, 10);
+    }
+
+    #[test]
+    #[should_panic(expected = "Removed entity 10 instead of 20 at 5!")]
+    fn test_remove_wrong_entity() {
+        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.set_entity(5, 10);
+        map.remove_entity(5, 20);
     }
 }
