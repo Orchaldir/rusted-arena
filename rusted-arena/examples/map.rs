@@ -33,7 +33,10 @@ impl App for MapApp {
 
     fn on_button_released(&mut self, position: Point, button: MouseButton) {
         println!("Button '{:?}' released at {:?}", button, position);
-        self.body = self.update_pos(get_index(position.x, position.y, self.map.get_size()));
+        self.body = update_position(
+            &self.body,
+            get_index(position.x, position.y, self.map.get_size()),
+        );
     }
 
     fn on_key_released(&mut self, key: VirtualKeyCode) {
@@ -55,7 +58,7 @@ impl MapApp {
     fn try_move(&mut self, dir: Direction) {
         match self.get_new_position(dir, 0) {
             None => println!("Neighbor for {:?} is outside of the map!", dir),
-            Some(index) => self.body = self.update_pos(index),
+            Some(index) => self.body = update_position(&self.body, index),
         }
     }
 
@@ -73,19 +76,6 @@ impl MapApp {
                 .map
                 .get_neighbor(indices[0], dir)
                 .filter(|i| self.map.is_free(*i, entity)),
-        }
-    }
-
-    fn update_pos(&self, index: usize) -> Body {
-        match self.body {
-            Body::Simple(_) => Body::Simple(index),
-            Body::Big(_, size) => Body::Big(index, size),
-            Body::Snake(ref indices) => {
-                let mut new_parts = vec![index];
-                new_parts.extend_from_slice(indices);
-                new_parts.pop();
-                Body::Snake(new_parts)
-            }
         }
     }
 }
