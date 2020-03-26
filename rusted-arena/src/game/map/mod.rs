@@ -107,25 +107,7 @@ impl TileMap {
 
     pub fn is_square_free(&self, index: usize, size: u32, entity: u32) -> bool {
         self.assert_inside(index);
-        let pos = get_point(index, self.size);
-
-        if pos.x > self.size.x - size || pos.y > self.size.y - size {
-            return false;
-        }
-
-        for dx in 0..size {
-            let x = pos.x + dx;
-
-            for dy in 0..size {
-                let y = pos.y + dy;
-
-                if !self.is_free(get_index(x, y, self.size), entity) {
-                    return false;
-                }
-            }
-        }
-
-        true
+        execute_function_on_square(self.size, index, size, |i: usize| self.is_free(i, entity))
     }
 
     // occupying entities
@@ -135,7 +117,7 @@ impl TileMap {
         self.entities.get(&index)
     }
 
-    pub fn remove_entity(&mut self, index: usize, entity: u32) {
+    pub fn remove_entity(&mut self, index: usize, entity: u32) -> bool {
         self.assert_inside(index);
 
         match self.entities.remove(&index) {
@@ -146,20 +128,63 @@ impl TileMap {
             ),
             _ => {}
         }
+
+        true
     }
 
-    pub fn set_entity(&mut self, index: usize, entity: u32) {
+    pub fn remove_entity_from_square(&mut self, index: usize, size: u32, entity: u32) -> bool {
+        self.assert_inside(index);
+        execute_function_on_square(self.size, index, size, |i: usize| {
+            self.remove_entity(i, entity)
+        })
+    }
+
+    pub fn add_entity(&mut self, index: usize, entity: u32) -> bool {
         self.assert_inside(index);
 
         match self.entities.insert(index, entity) {
             Some(other) if other == entity => panic!("Entity {} is already at {}!", entity, index),
             Some(other) => panic!(
-                "Setting entity {} blocked by {} at {}!",
+                "Adding entity {} blocked by {} at {}!",
                 entity, other, index
             ),
             _ => {}
         }
+
+        true
     }
+
+    pub fn add_entity_to_square(&mut self, index: usize, size: u32, entity: u32) -> bool {
+        self.assert_inside(index);
+        execute_function_on_square(self.size, index, size, |i: usize| {
+            self.add_entity(i, entity)
+        })
+    }
+}
+
+fn execute_function_on_square<F>(map_size: Point, index: usize, size: u32, mut func: F) -> bool
+where
+    F: FnMut(usize) -> bool,
+{
+    let pos = get_point(index, map_size);
+
+    if pos.x > map_size.x - size || pos.y > map_size.y - size {
+        return false;
+    }
+
+    for dx in 0..size {
+        let x = pos.x + dx;
+
+        for dy in 0..size {
+            let y = pos.y + dy;
+
+            if !func(get_index(x, y, map_size)) {
+                return false;
+            }
+        }
+    }
+
+    true
 }
 
 #[cfg(test)]
@@ -267,10 +292,10 @@ mod tests {
     }
 
     #[test]
-    fn test_set_entity() {
+    fn test_add_entity() {
         let mut map = TileMapBuilder::new(SIZE, Floor).build();
 
-        map.set_entity(5, 42);
+        map.add_entity(5, 42);
 
         assert_eq!(map.get_entity(0), None);
         assert_eq!(map.get_entity(5), Some(&42));
@@ -278,37 +303,37 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "Index 12 is outside the map!")]
-    fn test_set_entity_outside() {
+    fn test_add_entity_outside() {
         let mut map = TileMapBuilder::new(SIZE, Floor).build();
 
-        map.set_entity(OUTSIDE, 42);
+        map.add_entity(OUTSIDE, 42);
     }
 
     #[test]
     #[should_panic(expected = "Entity 42 is already at 2!")]
-    fn test_set_entity_twice() {
+    fn test_add_entity_twice() {
         let mut map = TileMapBuilder::new(SIZE, Floor).build();
 
-        map.set_entity(2, 42);
-        map.set_entity(2, 42);
+        map.add_entity(2, 42);
+        map.add_entity(2, 42);
     }
 
     #[test]
-    #[should_panic(expected = "Setting entity 2 blocked by 1 at 5!")]
-    fn test_set_entity_different() {
+    #[should_panic(expected = "Adding entity 2 blocked by 1 at 5!")]
+    fn test_add_entity_different() {
         let mut map = TileMapBuilder::new(SIZE, Floor).build();
 
-        map.set_entity(5, 1);
-        map.set_entity(5, 2);
+        map.add_entity(5, 1);
+        map.add_entity(5, 2);
     }
 
     #[test]
     fn test_remove_entity() {
         let mut map = TileMapBuilder::new(SIZE, Floor).build();
 
-        map.set_entity(5, 10);
+        map.add_entity(5, 10);
         map.remove_entity(5, 10);
-        map.set_entity(5, 20);
+        map.add_entity(5, 20);
 
         assert_eq!(map.get_entity(5), Some(&20));
     }
@@ -326,7 +351,39 @@ mod tests {
     fn test_remove_wrong_entity() {
         let mut map = TileMapBuilder::new(SIZE, Floor).build();
 
-        map.set_entity(5, 10);
+        map.add_entity(5, 10);
         map.remove_entity(5, 20);
+    }
+
+    #[test]
+    fn test_add_entity_to_square() {
+        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.add_entity_to_square(5, 2, 9);
+
+        assert_eq!(map.get_entity(0), None);
+        assert_eq!(map.get_entity(1), None);
+        assert_eq!(map.get_entity(2), None);
+        assert_eq!(map.get_entity(3), None);
+        assert_eq!(map.get_entity(4), None);
+        assert_eq!(map.get_entity(5), Some(&9));
+        assert_eq!(map.get_entity(6), Some(&9));
+        assert_eq!(map.get_entity(7), None);
+        assert_eq!(map.get_entity(8), None);
+        assert_eq!(map.get_entity(9), Some(&9));
+        assert_eq!(map.get_entity(10), Some(&9));
+        assert_eq!(map.get_entity(11), None);
+    }
+
+    #[test]
+    fn test_remove_entity_from_square() {
+        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+
+        map.add_entity_to_square(5, 2, 9);
+        map.remove_entity_from_square(5, 2, 9);
+
+        for i in 0..12 {
+            assert_eq!(map.get_entity(i), None);
+        }
     }
 }

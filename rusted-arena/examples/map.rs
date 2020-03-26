@@ -4,6 +4,7 @@ extern crate rusted_tiles;
 use rusted_arena::game::component::body::*;
 use rusted_arena::game::map::builder::TileMapBuilder;
 use rusted_arena::game::map::*;
+use rusted_arena::game::system::movement::*;
 use rusted_tiles::math::color::*;
 use rusted_tiles::math::get_index;
 use rusted_tiles::math::point::*;
@@ -44,19 +45,27 @@ impl App for MapApp {
             VirtualKeyCode::Left => self.try_move(Direction::West),
             VirtualKeyCode::Right => self.try_move(Direction::East),
             VirtualKeyCode::Up => self.try_move(Direction::North),
-            VirtualKeyCode::Key1 => self.body = Body::Simple(get_position(&self.body)),
-            VirtualKeyCode::Key2 => self.body = Body::Big(get_position(&self.body), 6),
-            VirtualKeyCode::Key3 => self.body = Body::Snake(vec![get_position(&self.body); 20]),
             _ => (),
         }
     }
 }
 
 impl MapApp {
+    pub fn new(mut map: TileMap, body: Body, tile_renderer: TileRenderer) -> MapApp {
+        add_entity_to_map(&mut map, &body, 0);
+        MapApp {
+            map,
+            body,
+            tile_renderer,
+        }
+    }
     fn try_move(&mut self, dir: Direction) {
         match self.get_new_position(dir, 0) {
             None => println!("Neighbor for {:?} is outside of the map!", dir),
-            Some(index) => self.body = update_position(&self.body, index),
+            Some(index) => {
+                update_entity_on_map(&mut self.map, &self.body, index, 0);
+                self.body = update_position(&self.body, index);
+            }
         }
     }
 
@@ -93,11 +102,11 @@ fn main() {
 
     let mut window = GliumWindow::new("Map Example", size, tile_size);
 
-    let app = Rc::new(RefCell::new(MapApp {
-        map: tile_map,
-        body: Body::Simple(410),
-        tile_renderer: window.get_tile_renderer(),
-    }));
+    let app = Rc::new(RefCell::new(MapApp::new(
+        tile_map,
+        Body::Simple(410),
+        window.get_tile_renderer(),
+    )));
 
     window.run(app.clone());
 }
