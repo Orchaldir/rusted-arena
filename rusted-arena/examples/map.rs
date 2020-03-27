@@ -71,31 +71,10 @@ impl MapApp {
     }
 
     fn try_move(&mut self, dir: Direction) {
-        let body = &self.bodies[self.current_body];
+        let body = &mut self.bodies[self.current_body];
 
-        match self.get_new_position(body, dir, self.current_body) {
-            None => println!("Neighbor for {:?} is blocked!", dir),
-            Some(index) => {
-                update_entity_on_map(&mut self.map, body, index, self.current_body);
-                self.bodies[self.current_body] = update_position(body, index);
-            }
-        }
-    }
-
-    fn get_new_position(&self, body: &Body, dir: Direction, entity: usize) -> Option<usize> {
-        match body {
-            Body::Simple(index) => self
-                .map
-                .get_neighbor(*index, dir)
-                .filter(|i| self.map.is_free(*i, entity)),
-            Body::Big(index, size) => self
-                .map
-                .get_neighbor(*index, dir)
-                .filter(|i| self.map.is_square_free(*i, *size, entity)),
-            Body::Snake(ref indices) => self
-                .map
-                .get_neighbor(indices[0], dir)
-                .filter(|i| self.map.is_free(*i, entity)),
+        if !move_body(&mut self.map, self.current_body, body, dir) {
+            println!("Neighbor for {:?} is blocked!", dir)
         }
     }
 }
