@@ -1,8 +1,10 @@
-use crate::utils::ecs::storage::{Component, ComponentStorage};
+use crate::utils::ecs::component::Component;
+use crate::utils::ecs::storage::ComponentStorage;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 
-struct StorageMgr {
+#[derive(Default)]
+pub struct StorageMgr {
     storage_map: HashMap<TypeId, Box<dyn Any>>,
 }
 
@@ -17,14 +19,17 @@ impl StorageMgr {
         let type_id = TypeId::of::<C>();
 
         if self.storage_map.contains_key(&type_id) {
-            panic!("Component '{}' is already registered!", C::get_component_type())
+            panic!(
+                "Component '{}' is already registered!",
+                C::get_component_type()
+            )
         }
 
         let new_storage = <C as Component>::Storage::new();
         self.storage_map.insert(type_id, Box::new(new_storage));
     }
 
-    pub fn get<C: Component>(&mut self) -> &<C as Component>::Storage {
+    pub fn get<C: Component>(&self) -> &<C as Component>::Storage {
         let type_id = TypeId::of::<C>();
 
         match self.storage_map.get(&type_id) {
@@ -56,65 +61,52 @@ impl StorageMgr {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::ecs::storage::ComponentMap;
-
-    #[derive(Clone, Copy, Debug, PartialEq)]
-    struct TestComponent {
-        pub value: u32,
-    }
-
-    impl Component for TestComponent {
-        type Storage = ComponentMap<Self>;
-
-        fn get_component_type() -> &'static str {
-            "Test"
-        }
-    }
+    use crate::utils::ecs::testing::ComponentA;
 
     #[test]
     fn test_register_and_get() {
         let mut manager = StorageMgr::new();
 
-        manager.register::<TestComponent>();
+        manager.register::<ComponentA>();
 
-        let storage = manager.get::<TestComponent>();
+        let storage = manager.get::<ComponentA>();
 
         assert_eq!(storage.get(0), None);
     }
 
     #[test]
-    #[should_panic(expected = "Component 'Test' is already registered!")]
+    #[should_panic(expected = "Component 'A' is already registered!")]
     fn test_register_twice() {
         let mut manager = StorageMgr::new();
 
-        manager.register::<TestComponent>();
-        manager.register::<TestComponent>();
+        manager.register::<ComponentA>();
+        manager.register::<ComponentA>();
     }
 
     #[test]
-    #[should_panic(expected = "Component 'Test' is not registered!")]
+    #[should_panic(expected = "Component 'A' is not registered!")]
     fn test_get_without_register() {
-        let mut manager = StorageMgr::new();
+        let manager = StorageMgr::new();
 
-        manager.get::<TestComponent>();
+        manager.get::<ComponentA>();
     }
 
     #[test]
     fn test_register_and_get_mut() {
         let mut manager = StorageMgr::new();
 
-        manager.register::<TestComponent>();
+        manager.register::<ComponentA>();
 
-        let storage = manager.get_mut::<TestComponent>();
+        let storage = manager.get_mut::<ComponentA>();
 
-        storage.add(0, TestComponent { value: 5 });
+        storage.add(0, ComponentA { value: 5 });
     }
 
     #[test]
-    #[should_panic(expected = "Component 'Test' is not registered!")]
+    #[should_panic(expected = "Component 'A' is not registered!")]
     fn test_get_mut_without_register() {
         let mut manager = StorageMgr::new();
 
-        manager.get_mut::<TestComponent>();
+        manager.get_mut::<ComponentA>();
     }
 }

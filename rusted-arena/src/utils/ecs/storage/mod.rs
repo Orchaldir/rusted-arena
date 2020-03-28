@@ -1,14 +1,6 @@
 pub mod manager;
 
-use std::any::Any;
 use std::collections::HashMap;
-use std::fmt::Debug;
-
-trait Component: Debug + Sized + Any {
-    type Storage: ComponentStorage<Self>;
-
-    fn get_component_type() -> &'static str;
-}
 
 pub trait ComponentStorage<T> {
     fn new() -> Self;
@@ -49,26 +41,15 @@ impl<T> ComponentStorage<T> for ComponentMap<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[derive(Clone, Copy, Debug, PartialEq)]
-    struct TestComponent {
-        pub value: u32,
-    }
-
-    impl Component for TestComponent {
-        type Storage = ComponentMap<Self>;
-
-        fn get_component_type() -> &'static str {
-            "test"
-        }
-    }
+    use crate::utils::ecs::component::Component;
+    use crate::utils::ecs::testing::ComponentA;
 
     const ENTITY: usize = 42;
-    const COMPONENT: TestComponent = TestComponent { value: 6 };
+    const COMPONENT: ComponentA = ComponentA { value: 6 };
 
     #[test]
     fn test_add_and_get() {
-        let mut storage: ComponentMap<TestComponent> = <TestComponent as Component>::Storage::new();
+        let mut storage: ComponentMap<ComponentA> = <ComponentA as Component>::Storage::new();
 
         storage.add(ENTITY, COMPONENT);
 
@@ -77,7 +58,7 @@ mod tests {
 
     #[test]
     fn test_add_and_get_mut() {
-        let mut storage: ComponentMap<TestComponent> = <TestComponent as Component>::Storage::new();
+        let mut storage: ComponentMap<ComponentA> = <ComponentA as Component>::Storage::new();
 
         storage.add(ENTITY, COMPONENT);
 
@@ -85,12 +66,12 @@ mod tests {
             component.value = 12;
         }
 
-        assert_eq!(storage.get(ENTITY), Some(&TestComponent { value: 12 }));
+        assert_eq!(storage.get(ENTITY), Some(&ComponentA { value: 12 }));
     }
 
     #[test]
     fn test_get_unknown_entity() {
-        let mut storage: ComponentMap<TestComponent> = <TestComponent as Component>::Storage::new();
+        let mut storage: ComponentMap<ComponentA> = <ComponentA as Component>::Storage::new();
 
         assert_eq!(storage.get(ENTITY), None);
         assert_eq!(storage.get_mut(ENTITY), None);
@@ -98,7 +79,7 @@ mod tests {
 
     #[test]
     fn test_remove() {
-        let mut storage: ComponentMap<TestComponent> = <TestComponent as Component>::Storage::new();
+        let mut storage: ComponentMap<ComponentA> = <ComponentA as Component>::Storage::new();
 
         storage.add(ENTITY, COMPONENT);
 
