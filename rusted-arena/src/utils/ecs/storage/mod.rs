@@ -6,6 +6,8 @@ use std::fmt::Debug;
 
 trait Component: Debug + Sized + Any {
     type Storage: ComponentStorage<Self>;
+
+    fn get_component_type() -> &'static str;
 }
 
 pub trait ComponentStorage<T> {
@@ -55,6 +57,10 @@ mod tests {
 
     impl Component for TestComponent {
         type Storage = ComponentMap<Self>;
+
+        fn get_component_type() -> &'static str {
+            "test"
+        }
     }
 
     const ENTITY: usize = 42;

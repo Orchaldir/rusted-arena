@@ -17,7 +17,7 @@ impl StorageMgr {
         let type_id = TypeId::of::<C>();
 
         if self.storage_map.contains_key(&type_id) {
-            panic!("Component {:?} is already registered!", type_id)
+            panic!("Component '{}' is already registered!", C::get_component_type())
         }
 
         let new_storage = <C as Component>::Storage::new();
@@ -34,7 +34,7 @@ impl StorageMgr {
                     None => unreachable!(),
                 }
             }
-            None => panic!("Component {:?} is not registered!", type_id),
+            None => panic!("Component '{}' is not registered!", C::get_component_type()),
         }
     }
 
@@ -48,7 +48,7 @@ impl StorageMgr {
                     None => unreachable!(),
                 }
             }
-            None => panic!("Component {:?} is not registered!", type_id),
+            None => panic!("Component '{}' is not registered!", C::get_component_type()),
         }
     }
 }
@@ -65,6 +65,10 @@ mod tests {
 
     impl Component for TestComponent {
         type Storage = ComponentMap<Self>;
+
+        fn get_component_type() -> &'static str {
+            "Test"
+        }
     }
 
     #[test]
@@ -79,7 +83,16 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "Component 'Test' is already registered!")]
+    fn test_register_twice() {
+        let mut manager = StorageMgr::new();
+
+        manager.register::<TestComponent>();
+        manager.register::<TestComponent>();
+    }
+
+    #[test]
+    #[should_panic(expected = "Component 'Test' is not registered!")]
     fn test_get_without_register() {
         let mut manager = StorageMgr::new();
 
@@ -98,7 +111,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "Component 'Test' is not registered!")]
     fn test_get_mut_without_register() {
         let mut manager = StorageMgr::new();
 
