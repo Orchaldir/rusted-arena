@@ -202,10 +202,21 @@ mod tests {
         false, false, true, false, false, false, true, false, false, false, false, false,
     ];
 
+    // tile
+
     #[test]
     fn test_is_walkable() {
         assert_eq!(TileType::Floor.is_walkable(), true);
         assert_eq!(TileType::Wall.is_walkable(), false);
+    }
+
+    // map
+
+    #[test]
+    fn test_get_size() {
+        let map = TileMapBuilder::new(SIZE, Floor).build();
+
+        assert_eq!(map.get_size(), SIZE);
     }
 
     #[test]
