@@ -42,3 +42,34 @@ impl Graphic {
         self.data.get(index).unwrap_or(&UNKNOWN_GRAPHIC_DATA)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::GraphicData::*;
+    use super::*;
+
+    const A: GraphicData = Ascii(b'A', RED);
+    const B: GraphicData = Ascii(b'B', BLUE);
+
+    #[test]
+    fn test_ascii() {
+        assert_eq!(Graphic::ascii(b'A', RED), Graphic { data: vec![A] });
+    }
+
+    #[test]
+    fn test_two_ascii() {
+        assert_eq!(
+            Graphic::two_ascii(b'A', RED, b'B', BLUE),
+            Graphic { data: vec![A, B] }
+        );
+    }
+
+    #[test]
+    fn test_get() {
+        let graphic = Graphic { data: vec![A, B] };
+
+        assert_eq!(graphic.get(0), &A);
+        assert_eq!(graphic.get(1), &B);
+        assert_eq!(graphic.get(2), &UNKNOWN_GRAPHIC_DATA);
+    }
+}

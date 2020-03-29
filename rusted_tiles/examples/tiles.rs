@@ -3,13 +3,13 @@ extern crate rusted_tiles;
 use rusted_tiles::math::color::*;
 use rusted_tiles::math::point::Point;
 use rusted_tiles::rendering::glium_impl::window::GliumWindow;
-use rusted_tiles::rendering::tile::TileRenderer;
+use rusted_tiles::rendering::tile::*;
 use rusted_tiles::rendering::{App, MouseButton, Renderer, VirtualKeyCode, Window};
 use std::cell::RefCell;
 use std::rc::Rc;
 
 pub struct MapApp {
-    tile_renderer: TileRenderer,
+    tile_renderer: TileRendererToWindow,
 }
 
 impl App for MapApp {
