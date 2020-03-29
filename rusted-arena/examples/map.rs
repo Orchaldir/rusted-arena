@@ -3,10 +3,11 @@ extern crate rusted_tiles;
 
 use rusted_arena::game::component::body::Body::*;
 use rusted_arena::game::component::body::*;
+use rusted_arena::game::component::graphic::Graphic;
 use rusted_arena::game::map::builder::TileMapBuilder;
 use rusted_arena::game::map::*;
 use rusted_arena::game::system::movement::*;
-use rusted_arena::game::system::rendering::render_bodies;
+use rusted_arena::game::system::rendering::render_entities;
 use rusted_arena::utils::ecs::storage::ComponentStorage;
 use rusted_arena::utils::ecs::ECS;
 use rusted_tiles::math::color::*;
@@ -30,7 +31,7 @@ impl App for MapApp {
         self.tile_renderer.clear();
         self.map.render(&mut self.tile_renderer);
 
-        render_bodies(&mut self.ecs, &mut self.tile_renderer, self.map.get_size());
+        render_entities(&mut self.ecs, &mut self.tile_renderer, self.map.get_size());
 
         renderer.start(BLACK);
         self.tile_renderer.render(renderer);
@@ -95,11 +96,17 @@ fn main() {
     let mut ecs = ECS::new();
 
     ecs.get_storage_mgr_mut().register::<Body>();
+    ecs.get_storage_mgr_mut().register::<Graphic>();
 
-    ecs.create_entity().with(Simple(get_index(10, 10, size)));
-    ecs.create_entity().with(Big(get_index(10, 20, size), 5));
     ecs.create_entity()
-        .with(Snake(vec![get_index(35, 5, size); 25]));
+        .with(Simple(get_index(10, 10, size)))
+        .with(Graphic::ascii(b'@', WHITE));
+    ecs.create_entity()
+        .with(Big(get_index(10, 20, size), 5))
+        .with(Graphic::ascii(b'D', RED));
+    ecs.create_entity()
+        .with(Snake(vec![get_index(35, 5, size); 25]))
+        .with(Graphic::two_ascii(b'S', CYAN, b'S', BLUE));
 
     add_all_to_map(&mut ecs, &mut tile_map);
 

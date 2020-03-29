@@ -1,9 +1,5 @@
 use crate::utils::ecs::component::Component;
 use crate::utils::ecs::storage::ComponentMap;
-use rusted_tiles::math::color::*;
-use rusted_tiles::math::get_point;
-use rusted_tiles::math::point::*;
-use rusted_tiles::rendering::tile::TileRenderer;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Body {
@@ -38,19 +34,6 @@ pub fn update_position(body: &mut Body, new_index: usize) {
             new_indices.pop();
 
             *indices = new_indices;
-        }
-    }
-}
-
-pub fn render_body(renderer: &mut TileRenderer, size: Point, body: &Body) {
-    match body {
-        Body::Simple(index) => renderer.add_ascii(get_point(*index, size), b'@', RED),
-        Body::Big(index, s) => renderer.add_big_ascii(get_point(*index, size), *s, b'D', RED),
-        Body::Snake(indices) => {
-            for i in (0..indices.len()).rev() {
-                let color = if i == 0 { RED } else { WHITE };
-                renderer.add_ascii(get_point(indices[i], size), b'S', color);
-            }
         }
     }
 }
