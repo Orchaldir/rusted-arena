@@ -6,6 +6,7 @@ use rusted_arena::game::component::body::*;
 use rusted_arena::game::map::builder::TileMapBuilder;
 use rusted_arena::game::map::*;
 use rusted_arena::game::system::movement::*;
+use rusted_arena::game::system::rendering::render_bodies;
 use rusted_arena::utils::ecs::storage::ComponentStorage;
 use rusted_arena::utils::ecs::ECS;
 use rusted_tiles::math::color::*;
@@ -29,13 +30,7 @@ impl App for MapApp {
         self.tile_renderer.clear();
         self.map.render(&mut self.tile_renderer);
 
-        let body_storage = self.ecs.get_storage_mgr().get::<Body>();
-
-        for &entity in self.ecs.get_entities() {
-            if let Some(body) = body_storage.get(entity) {
-                render_body(&mut self.tile_renderer, self.map.get_size(), body);
-            }
-        }
+        render_bodies(&mut self.ecs, &mut self.tile_renderer, self.map.get_size());
 
         renderer.start(BLACK);
         self.tile_renderer.render(renderer);
