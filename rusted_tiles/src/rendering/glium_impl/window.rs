@@ -1,6 +1,6 @@
 use super::GliumRenderer;
 use crate::math::point::*;
-use crate::rendering::tile::TileRenderer;
+use crate::rendering::tile::TileRendererToWindow;
 use crate::rendering::{App, Window};
 use glium::glutin;
 use std::cell::RefCell;
@@ -31,8 +31,8 @@ impl GliumWindow {
 }
 
 impl Window for GliumWindow {
-    fn get_tile_renderer(&self) -> TileRenderer {
-        TileRenderer::new(ZERO, self.tile_size)
+    fn get_tile_renderer(&self) -> TileRendererToWindow {
+        TileRendererToWindow::new(ZERO, self.tile_size)
     }
 
     fn run(&mut self, app: Rc<RefCell<dyn App>>) -> ! {

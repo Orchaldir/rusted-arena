@@ -25,6 +25,6 @@ pub trait App {
 }
 
 pub trait Window {
-    fn get_tile_renderer(&self) -> tile::TileRenderer;
+    fn get_tile_renderer(&self) -> tile::TileRendererToWindow;
     fn run(&mut self, app: Rc<RefCell<dyn App>>) -> !;
 }

@@ -14,7 +14,7 @@ use rusted_tiles::math::color::*;
 use rusted_tiles::math::get_index;
 use rusted_tiles::math::point::*;
 use rusted_tiles::rendering::glium_impl::window::GliumWindow;
-use rusted_tiles::rendering::tile::TileRenderer;
+use rusted_tiles::rendering::tile::{TileRenderer, TileRendererToWindow};
 use rusted_tiles::rendering::{App, MouseButton, Renderer, VirtualKeyCode, Window};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -23,7 +23,7 @@ pub struct MapApp {
     ecs: ECS,
     map: TileMap,
     current_body: usize,
-    tile_renderer: TileRenderer,
+    tile_renderer: TileRendererToWindow,
 }
 
 impl App for MapApp {
@@ -58,7 +58,7 @@ impl App for MapApp {
 }
 
 impl MapApp {
-    pub fn new(ecs: ECS, map: TileMap, tile_renderer: TileRenderer) -> MapApp {
+    pub fn new(ecs: ECS, map: TileMap, tile_renderer: TileRendererToWindow) -> MapApp {
         MapApp {
             ecs,
             map,

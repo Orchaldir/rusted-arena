@@ -48,7 +48,7 @@ impl TileMap {
         );
     }
 
-    pub fn render(&self, renderer: &mut TileRenderer) {
+    pub fn render(&self, renderer: &mut dyn TileRenderer) {
         let mut pos = ZERO;
 
         for tile in self.tiles.iter() {
