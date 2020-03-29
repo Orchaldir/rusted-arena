@@ -8,6 +8,7 @@ pub trait ComponentStorage<T> {
     fn get(&self, entity: usize) -> Option<&T>;
     fn get_mut(&mut self, entity: usize) -> Option<&mut T>;
     fn remove(&mut self, entity: usize) -> Option<T>;
+    fn filter(&self, entities: &mut Vec<usize>);
 }
 
 pub struct ComponentMap<T> {
@@ -35,6 +36,10 @@ impl<T> ComponentStorage<T> for ComponentMap<T> {
 
     fn remove(&mut self, entity: usize) -> Option<T> {
         self.components.remove(&entity)
+    }
+
+    fn filter(&self, entities: &mut Vec<usize>) {
+        entities.retain(|e| self.components.contains_key(e));
     }
 }
 
@@ -85,5 +90,16 @@ mod tests {
 
         assert_eq!(storage.remove(ENTITY), Some(COMPONENT));
         assert_eq!(storage.get(ENTITY), None);
+    }
+
+    #[test]
+    fn test_filter() {
+        let mut storage: ComponentMap<ComponentA> = <ComponentA as Component>::Storage::new();
+        let mut entities = vec![0, ENTITY, 100];
+
+        storage.add(ENTITY, COMPONENT);
+        storage.filter(&mut entities);
+
+        assert_eq!(entities, vec![ENTITY]);
     }
 }
