@@ -42,7 +42,7 @@ impl ECS {
         &self.entities
     }
 
-    pub fn get_entities_of_2<A: Component, B: Component>(&self) -> Vec<usize>{
+    pub fn get_entities_of_2<A: Component, B: Component>(&self) -> Vec<usize> {
         let mut entities = self.entities.clone();
         let storage_a: &A::Storage = self.storage_mgr.get::<A>();
         let storage_b: &B::Storage = self.storage_mgr.get::<B>();

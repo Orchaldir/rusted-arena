@@ -1,5 +1,17 @@
 use crate::game::component::body::{update_position, Body};
 use crate::game::map::{Direction, TileMap};
+use crate::utils::ecs::storage::ComponentStorage;
+use crate::utils::ecs::ECS;
+
+pub fn add_all_to_map(ecs: &mut ECS, map: &mut TileMap) {
+    let body_storage = ecs.get_storage_mgr().get::<Body>();
+
+    for &entity in ecs.get_entities() {
+        if let Some(body) = body_storage.get(entity) {
+            add_entity_to_map(map, body, entity);
+        }
+    }
+}
 
 pub fn add_entity_to_map(map: &mut TileMap, body: &Body, entity: usize) {
     match body {
@@ -77,6 +89,21 @@ mod tests {
 
     const SIZE: Point = Point { x: 3, y: 3 };
     const ENTITY: usize = 42;
+
+    // add_all_to_map
+
+    #[test]
+    fn test_add_all_to_map_simple() {
+        let mut ecs = ECS::new();
+        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+
+        ecs.get_storage_mgr_mut().register::<Body>();
+        ecs.create_entity().with(Big(4, 2));
+
+        add_all_to_map(&mut ecs, &mut map);
+
+        assert_big_entity(&mut map, 0);
+    }
 
     // add_entity_to_map
 
@@ -188,15 +215,19 @@ mod tests {
     }
 
     fn assert_big(map: &mut TileMap) {
+        assert_big_entity(map, ENTITY);
+    }
+
+    fn assert_big_entity(map: &mut TileMap, entity: usize) {
         assert_eq!(map.get_entity(0), None);
         assert_eq!(map.get_entity(1), None);
         assert_eq!(map.get_entity(2), None);
         assert_eq!(map.get_entity(3), None);
-        assert_eq!(map.get_entity(4), Some(&ENTITY));
-        assert_eq!(map.get_entity(5), Some(&ENTITY));
+        assert_eq!(map.get_entity(4), Some(&entity));
+        assert_eq!(map.get_entity(5), Some(&entity));
         assert_eq!(map.get_entity(6), None);
-        assert_eq!(map.get_entity(7), Some(&ENTITY));
-        assert_eq!(map.get_entity(8), Some(&ENTITY));
+        assert_eq!(map.get_entity(7), Some(&entity));
+        assert_eq!(map.get_entity(8), Some(&entity));
     }
 
     fn assert_snake(map: &mut TileMap) {

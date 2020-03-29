@@ -1,10 +1,13 @@
 extern crate rusted_arena;
 extern crate rusted_tiles;
 
+use rusted_arena::game::component::body::Body::*;
 use rusted_arena::game::component::body::*;
 use rusted_arena::game::map::builder::TileMapBuilder;
 use rusted_arena::game::map::*;
 use rusted_arena::game::system::movement::*;
+use rusted_arena::utils::ecs::storage::ComponentStorage;
+use rusted_arena::utils::ecs::ECS;
 use rusted_tiles::math::color::*;
 use rusted_tiles::math::get_index;
 use rusted_tiles::math::point::*;
@@ -15,8 +18,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 pub struct MapApp {
+    ecs: ECS,
     map: TileMap,
-    bodies: Vec<Body>,
     current_body: usize,
     tile_renderer: TileRenderer,
 }
@@ -26,8 +29,12 @@ impl App for MapApp {
         self.tile_renderer.clear();
         self.map.render(&mut self.tile_renderer);
 
-        for body in &self.bodies {
-            render_body(&mut self.tile_renderer, self.map.get_size(), body);
+        let body_storage = self.ecs.get_storage_mgr().get::<Body>();
+
+        for &entity in self.ecs.get_entities() {
+            if let Some(body) = body_storage.get(entity) {
+                render_body(&mut self.tile_renderer, self.map.get_size(), body);
+            }
         }
 
         renderer.start(BLACK);
@@ -55,26 +62,22 @@ impl App for MapApp {
 }
 
 impl MapApp {
-    pub fn new(map: TileMap, tile_renderer: TileRenderer) -> MapApp {
+    pub fn new(ecs: ECS, map: TileMap, tile_renderer: TileRenderer) -> MapApp {
         MapApp {
+            ecs,
             map,
-            bodies: Vec::new(),
             current_body: 0,
             tile_renderer,
         }
     }
 
-    pub fn add_body(&mut self, body: Body) {
-        let entity = self.bodies.len();
-        add_entity_to_map(&mut self.map, &body, entity);
-        self.bodies.push(body);
-    }
-
     fn try_move(&mut self, dir: Direction) {
-        let body = &mut self.bodies[self.current_body];
+        let body_storage = self.ecs.get_storage_mgr_mut().get_mut::<Body>();
 
-        if !move_body(&mut self.map, self.current_body, body, dir) {
-            println!("Neighbor for {:?} is blocked!", dir)
+        if let Some(body) = body_storage.get_mut(self.current_body) {
+            if !move_body(&mut self.map, self.current_body, body, dir) {
+                println!("Neighbor for {:?} is blocked!", dir)
+            }
         }
     }
 }
@@ -82,7 +85,7 @@ impl MapApp {
 fn main() {
     let size = Point { x: 40, y: 30 };
     let tile_size = Point { x: 20, y: 20 };
-    let tile_map = TileMapBuilder::new(size, TileType::Floor)
+    let mut tile_map = TileMapBuilder::new(size, TileType::Floor)
         .add_border(TileType::Wall)
         .add_rectangle(
             Point { x: 20, y: 10 },
@@ -94,17 +97,22 @@ fn main() {
 
     let mut window = GliumWindow::new("Map Example", size, tile_size);
 
+    let mut ecs = ECS::new();
+
+    ecs.get_storage_mgr_mut().register::<Body>();
+
+    ecs.create_entity().with(Simple(get_index(10, 10, size)));
+    ecs.create_entity().with(Big(get_index(10, 20, size), 5));
+    ecs.create_entity()
+        .with(Snake(vec![get_index(35, 5, size); 25]));
+
+    add_all_to_map(&mut ecs, &mut tile_map);
+
     let app = Rc::new(RefCell::new(MapApp::new(
+        ecs,
         tile_map,
         window.get_tile_renderer(),
     )));
-
-    app.borrow_mut()
-        .add_body(Body::Simple(get_index(10, 10, size)));
-    app.borrow_mut()
-        .add_body(Body::Big(get_index(10, 20, size), 5));
-    app.borrow_mut()
-        .add_body(Body::Snake(vec![get_index(35, 5, size); 25]));
 
     window.run(app.clone());
 }

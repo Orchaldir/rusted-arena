@@ -1,3 +1,5 @@
+use crate::utils::ecs::component::Component;
+use crate::utils::ecs::storage::ComponentMap;
 use rusted_tiles::math::color::*;
 use rusted_tiles::math::get_point;
 use rusted_tiles::math::point::*;
@@ -8,6 +10,14 @@ pub enum Body {
     Simple(usize),
     Big(usize, u32),
     Snake(Vec<usize>),
+}
+
+impl Component for Body {
+    type Storage = ComponentMap<Self>;
+
+    fn get_component_type() -> &'static str {
+        "Body"
+    }
 }
 
 pub fn get_position(body: &Body) -> usize {
@@ -49,6 +59,11 @@ pub fn render_body(renderer: &mut TileRenderer, size: Point, body: &Body) {
 mod tests {
     use super::Body::*;
     use super::*;
+
+    #[test]
+    fn test_get_component_type() {
+        assert_eq!(Body::get_component_type(), "Body");
+    }
 
     #[test]
     fn test_get_position_simple() {
