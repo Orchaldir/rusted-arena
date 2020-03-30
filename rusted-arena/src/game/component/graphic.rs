@@ -52,6 +52,11 @@ mod tests {
     const B: GraphicData = Ascii(b'B', BLUE);
 
     #[test]
+    fn test_get_component_type() {
+        assert_eq!(Graphic::get_component_type(), "Graphic");
+    }
+
+    #[test]
     fn test_ascii() {
         assert_eq!(Graphic::ascii(b'A', RED), Graphic { data: vec![A] });
     }
