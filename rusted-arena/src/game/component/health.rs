@@ -9,10 +9,21 @@ pub enum HealthState {
     Dead,
 }
 
+impl HealthState {
+    pub fn get_worse(&self) -> HealthState {
+        match self {
+            HealthState::Healthy => HealthState::Reeling,
+            HealthState::Reeling => HealthState::Unconsciousness,
+            HealthState::Unconsciousness => HealthState::Dead,
+            HealthState::Dead => HealthState::Dead,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Health {
-    state: HealthState,
-    penalty: u32,
+    pub state: HealthState,
+    pub penalty: u32,
 }
 
 impl Component for Health {
