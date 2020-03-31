@@ -4,6 +4,7 @@ use std::collections::HashMap;
 pub struct Skill {
     pub id: usize,
     pub name: String,
+    pub default: Option<i32>,
 }
 
 pub struct SkillMgr {
@@ -44,9 +45,9 @@ pub struct SkillBuilder {
 }
 
 impl SkillBuilder {
-    pub fn create(mut self, name: String) -> SkillBuilder {
+    pub fn create(mut self, name: String, default: Option<i32>) -> SkillBuilder {
         let id = self.skills.len();
-        self.skills.push(Skill { id, name });
+        self.skills.push(Skill { id, name, default });
         self
     }
 
@@ -66,12 +67,12 @@ mod tests {
     #[test]
     fn test_get() {
         let manager = SkillBuilder::default()
-            .create(NAME_A.to_string())
-            .create(NAME_B.to_string())
+            .create(NAME_A.to_string(), None)
+            .create(NAME_B.to_string(), Some(4))
             .build();
 
-        assert_skill(&manager, 0, NAME_A);
-        assert_skill(&manager, 1, NAME_B);
+        assert_skill(&manager, 0, NAME_A, None);
+        assert_skill(&manager, 1, NAME_B, Some(4));
     }
 
     #[test]
@@ -85,8 +86,8 @@ mod tests {
     #[test]
     fn test_get_id() {
         let manager = SkillBuilder::default()
-            .create(NAME_A.to_string())
-            .create(NAME_B.to_string())
+            .create(NAME_A.to_string(), None)
+            .create(NAME_B.to_string(), None)
             .build();
 
         assert_eq!(manager.get_id(NAME_A), Some(0));
@@ -94,9 +95,10 @@ mod tests {
         assert_eq!(manager.get_id(NAME_C), None);
     }
 
-    fn assert_skill(manager: &SkillMgr, id: usize, name: &str) {
+    fn assert_skill(manager: &SkillMgr, id: usize, name: &str, default: Option<i32>) {
         let skill = manager.get(id);
         assert_eq!(skill.id, id);
         assert_eq!(skill.name, name);
+        assert_eq!(skill.default, default);
     }
 }
