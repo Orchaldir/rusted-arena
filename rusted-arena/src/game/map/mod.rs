@@ -112,7 +112,7 @@ impl TileMap {
 
     // occupying entities
 
-    pub fn get_entity(&mut self, index: usize) -> Option<&usize> {
+    pub fn get_entity(&self, index: usize) -> Option<&usize> {
         self.assert_inside(index);
         self.entities.get(&index)
     }
@@ -296,7 +296,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "Index 12 is outside the map!")]
     fn test_get_entity_outside() {
-        let mut map = TileMapBuilder::new(SIZE, Floor).build();
+        let map = TileMapBuilder::new(SIZE, Floor).build();
 
         map.get_entity(OUTSIDE);
     }
