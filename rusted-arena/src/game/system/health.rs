@@ -3,7 +3,6 @@ use crate::game::component::stats::Stats;
 use crate::game::rpg::character::skill::Skill;
 use crate::game::rpg::check::{CheckResult, Checker};
 use crate::game::rpg::combat::damage::Damage;
-use crate::utils::ecs::storage::ComponentStorage;
 use crate::utils::ecs::ECS;
 
 pub struct HealthSystem<'a> {
@@ -14,12 +13,7 @@ pub struct HealthSystem<'a> {
 impl<'a> HealthSystem<'a> {
     pub fn take_damage(&mut self, ecs: &mut ECS, target: usize, damage: &Damage) {
         let toughness_rank = self.get_toughness(ecs, target);
-        let health = ecs
-            .get_storage_mgr_mut()
-            .get_mut::<Health>()
-            .get_mut(target)
-            .unwrap_or_else(|| panic!("Entity {} has no Health component!", target));
-
+        let health = ecs.unwrap_component_mut::<Health>(target);
         let rank = toughness_rank - health.penalty as i32;
 
         match self.checker.check(rank, damage.rank) {
@@ -33,11 +27,7 @@ impl<'a> HealthSystem<'a> {
     }
 
     fn get_toughness(&self, ecs: &ECS, target: usize) -> i32 {
-        let stats = ecs
-            .get_storage_mgr()
-            .get::<Stats>()
-            .get(target)
-            .unwrap_or_else(|| panic!("Entity {} has no Stats component!", target));
+        let stats = ecs.unwrap_component::<Stats>(target);
         stats
             .get_skill_rank(self.toughness)
             .expect("No default for skill Toughness!")
@@ -83,11 +73,7 @@ mod tests {
 
         system.take_damage(&mut ecs, entity, &damage);
 
-        let health = ecs
-            .get_storage_mgr()
-            .get::<Health>()
-            .get(entity)
-            .unwrap_or_else(|| panic!("Entity {} has no Health component!", entity));
+        let health = ecs.unwrap_component::<Health>(entity);
 
         assert_eq!(health.state, Healthy);
         assert_eq!(health.penalty, 1);
