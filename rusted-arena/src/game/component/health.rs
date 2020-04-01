@@ -5,7 +5,6 @@ use crate::utils::ecs::storage::ComponentMap;
 pub enum HealthState {
     Healthy,
     Reeling,
-    Unconsciousness,
     Dead,
 }
 
@@ -13,8 +12,7 @@ impl HealthState {
     pub fn get_worse(&self) -> HealthState {
         match self {
             HealthState::Healthy => HealthState::Reeling,
-            HealthState::Reeling => HealthState::Unconsciousness,
-            HealthState::Unconsciousness => HealthState::Dead,
+            HealthState::Reeling => HealthState::Dead,
             HealthState::Dead => HealthState::Dead,
         }
     }
@@ -64,8 +62,7 @@ mod tests {
     #[test]
     fn test_get_worse() {
         assert_eq!(Healthy.get_worse(), Reeling);
-        assert_eq!(Reeling.get_worse(), Unconsciousness);
-        assert_eq!(Unconsciousness.get_worse(), Dead);
+        assert_eq!(Reeling.get_worse(), Dead);
         assert_eq!(Dead.get_worse(), Dead);
     }
 }

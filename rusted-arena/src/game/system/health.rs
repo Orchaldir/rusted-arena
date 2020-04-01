@@ -14,9 +14,9 @@ impl<'a> HealthSystem<'a> {
     pub fn take_damage(&mut self, ecs: &mut ECS, target: usize, damage: &Damage) {
         let toughness_rank = self.get_toughness(ecs, target);
         let health = ecs.unwrap_component_mut::<Health>(target);
-        let rank = toughness_rank - health.penalty as i32;
+        let difficulty = toughness_rank - health.penalty as i32;
 
-        match self.checker.check(rank, damage.rank) {
+        match self.checker.check(damage.rank, difficulty) {
             CheckResult::Success(_) => {
                 health.state = health.state.get_worse();
             }
@@ -37,15 +37,31 @@ impl<'a> HealthSystem<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::game::component::health::HealthState;
     use crate::game::component::health::HealthState::*;
     use crate::game::component::stats::StatsBuilder;
     use crate::game::rpg::character::skill::Skill;
     use crate::game::rpg::check::*;
 
     #[test]
-    fn test_take_no_damage() {
+    fn test_take_damage_failure() {
+        test_take_damage(CheckResult::Failure(1), 6, 4, Healthy, 1)
+    }
+
+    #[test]
+    fn test_take_damage_success() {
+        test_take_damage(CheckResult::Success(1), 6, 4, Reeling, 0)
+    }
+
+    fn test_take_damage(
+        check_result: CheckResult,
+        toughness_rank: i32,
+        damage_rank: i32,
+        result_state: HealthState,
+        result_penalty: u32,
+    ) {
         let mut mock = MockChecker::new();
-        mock.expect_check().return_const(CheckResult::Failure(1));
+        mock.expect_check().return_const(check_result);
 
         let toughness = Skill {
             id: 0,
@@ -61,10 +77,14 @@ mod tests {
         let entity = ecs
             .create_entity()
             .with(Health::default())
-            .with(StatsBuilder::default().add_skill(&toughness, 6).build())
+            .with(
+                StatsBuilder::default()
+                    .add_skill(&toughness, toughness_rank)
+                    .build(),
+            )
             .get_entity();
 
-        let damage = Damage { rank: 4 };
+        let damage = Damage { rank: damage_rank };
 
         let mut system = HealthSystem {
             checker: &mock,
@@ -75,7 +95,7 @@ mod tests {
 
         let health = ecs.unwrap_component::<Health>(entity);
 
-        assert_eq!(health.state, Healthy);
-        assert_eq!(health.penalty, 1);
+        assert_eq!(health.state, result_state);
+        assert_eq!(health.penalty, result_penalty);
     }
 }
