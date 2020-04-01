@@ -1,13 +1,15 @@
+use mockall::*;
 use rand::{thread_rng, RngCore};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum CheckResult {
     Success(u32),
     Failure(u32),
 }
 
+#[automock]
 pub trait Checker {
     fn check(&self, value: i32, difficulty: i32) -> CheckResult;
 }

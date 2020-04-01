@@ -43,3 +43,53 @@ impl<'a> HealthSystem<'a> {
             .expect("No default for skill Toughness!")
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::game::component::health::HealthState::*;
+    use crate::game::component::stats::StatsBuilder;
+    use crate::game::rpg::character::skill::Skill;
+    use crate::game::rpg::check::*;
+
+    #[test]
+    fn test_take_no_damage() {
+        let mut mock = MockChecker::new();
+        mock.expect_check().return_const(CheckResult::Failure(1));
+
+        let toughness = Skill {
+            id: 0,
+            name: "T".to_string(),
+            default: None,
+        };
+
+        let mut ecs = ECS::new();
+
+        ecs.get_storage_mgr_mut().register::<Health>();
+        ecs.get_storage_mgr_mut().register::<Stats>();
+
+        let entity = ecs
+            .create_entity()
+            .with(Health::default())
+            .with(StatsBuilder::default().add_skill(&toughness, 6).build())
+            .get_entity();
+
+        let damage = Damage { rank: 4 };
+
+        let mut system = HealthSystem {
+            checker: &mock,
+            toughness: &toughness,
+        };
+
+        system.take_damage(&mut ecs, entity, &damage);
+
+        let health = ecs
+            .get_storage_mgr()
+            .get::<Health>()
+            .get(entity)
+            .unwrap_or_else(|| panic!("Entity {} has no Health component!", entity));
+
+        assert_eq!(health.state, Healthy);
+        assert_eq!(health.penalty, 1);
+    }
+}

@@ -46,7 +46,7 @@ impl Default for Health {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::component::health::HealthState::Healthy;
+    use crate::game::component::health::HealthState::*;
 
     #[test]
     fn test_get_component_type() {
@@ -59,5 +59,13 @@ mod tests {
 
         assert_eq!(health.state, Healthy);
         assert_eq!(health.penalty, 0);
+    }
+
+    #[test]
+    fn test_get_worse() {
+        assert_eq!(Healthy.get_worse(), Reeling);
+        assert_eq!(Reeling.get_worse(), Unconsciousness);
+        assert_eq!(Unconsciousness.get_worse(), Dead);
+        assert_eq!(Dead.get_worse(), Dead);
     }
 }
