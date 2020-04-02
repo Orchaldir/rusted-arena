@@ -1,5 +1,6 @@
 pub mod component;
 pub mod storage;
+pub mod system;
 pub mod testing;
 
 use crate::utils::ecs::component::Component;
@@ -216,7 +217,9 @@ mod tests {
 
         let entity = ecs.create_entity().with(A).get_entity();
 
-        assert_eq!(ecs.unwrap_component_mut::<ComponentA>(entity), &mut A);
+        ecs.unwrap_component_mut::<ComponentA>(entity).value += 2;
+
+        assert_eq!(ecs.unwrap_component::<ComponentA>(entity).value, 12);
     }
 
     #[test]
