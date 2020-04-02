@@ -6,12 +6,15 @@ pub mod testing;
 use crate::utils::ecs::component::Component;
 use crate::utils::ecs::storage::manager::StorageMgr;
 use crate::utils::ecs::storage::ComponentStorage;
+use std::any::{Any, TypeId};
+use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct ECS {
     entities: Vec<usize>,
     next_entity: usize,
     storage_mgr: StorageMgr,
+    data_map: HashMap<TypeId, Box<dyn Any>>,
 }
 
 impl ECS {
@@ -20,6 +23,7 @@ impl ECS {
             entities: Vec::new(),
             next_entity: 0,
             storage_mgr: StorageMgr::new(),
+            data_map: HashMap::new(),
         }
     }
 
@@ -85,6 +89,32 @@ impl ECS {
                     C::get_component_type()
                 )
             })
+    }
+
+    // data
+
+    pub fn put<T>(&mut self, data: T)
+    where
+        T: Any,
+    {
+        let type_id = TypeId::of::<T>();
+
+        self.data_map.insert(type_id, Box::new(data));
+    }
+
+    pub fn get<T>(&self) -> &T
+    where
+        T: Any,
+    {
+        let type_id = TypeId::of::<T>();
+
+        match self.data_map.get(&type_id) {
+            Some(probably_data) => match probably_data.downcast_ref::<T>() {
+                Some(data) => data,
+                None => unreachable!(),
+            },
+            None => unreachable!(),
+        }
     }
 }
 
@@ -230,5 +260,25 @@ mod tests {
         ecs.get_storage_mgr_mut().register::<ComponentB>();
 
         ecs.unwrap_component_mut::<ComponentB>(2);
+    }
+
+    // data
+
+    #[test]
+    fn test_put_get_data() {
+        let data: u32 = 56;
+        let mut ecs = ECS::new();
+
+        ecs.put(data);
+
+        assert_eq!(ecs.get::<u32>(), &data);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_get_no_data() {
+        let ecs = ECS::new();
+
+        ecs.get::<u32>();
     }
 }

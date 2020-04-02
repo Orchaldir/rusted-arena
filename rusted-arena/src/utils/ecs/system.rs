@@ -9,11 +9,9 @@ pub struct SystemMgr<A> {
 }
 
 impl<A> SystemMgr<A> {
-
     pub fn handle(&mut self, ecs: &mut ECS, action: &A) {
         for system in &mut self.systems {
             system.handle(ecs, &action);
         }
     }
-
 }
