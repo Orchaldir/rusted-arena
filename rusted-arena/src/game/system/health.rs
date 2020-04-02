@@ -11,7 +11,7 @@ pub struct HealthSystem<'a> {
 }
 
 impl<'a> HealthSystem<'a> {
-    pub fn take_damage(&mut self, ecs: &mut ECS, target: usize, damage: &Damage) {
+    pub fn take_damage(&self, ecs: &mut ECS, target: usize, damage: &Damage) {
         let toughness_rank = self.get_toughness(ecs, target);
         let health = ecs.unwrap_component_mut::<Health>(target);
         let difficulty = toughness_rank - health.penalty as i32;
@@ -86,7 +86,7 @@ mod tests {
 
         let damage = Damage { rank: damage_rank };
 
-        let mut system = HealthSystem {
+        let system = HealthSystem {
             checker: &mock,
             toughness: &toughness,
         };
